@@ -161,6 +161,7 @@ All strings live in `src/lib/i18n.ts`. British English and Hungarian (formal add
 | errInsecure                        | The camera needs a secure (https) connection.                                                      | A kamerához biztonságos (https) kapcsolat kell.                                                                                           |
 | errUnsupported                     | This browser can't show the camera. Open the page in Safari or Chrome.                             | Ez a böngésző nem tudja megjeleníteni a kamerát. Nyissa meg az oldalt Safariban vagy Chrome-ban.                                          |
 | installHint                        | For a full-screen mirror, add this page to your Home Screen.                                       | Teljes képernyős tükörhöz tegye ki az oldalt a kezdőképernyőre.                                                                           |
+| dismiss                            | Dismiss                                                                                            | Bezárás                                                                                                                                   |
 | lightOff / lightSoft / lightBright | Light: off / soft / bright                                                                         | Fény: ki / halvány / erős                                                                                                                 |
 | zoomReset                          | Zoom {n}×, tap to reset                                                                            | Nagyítás {n}×, koppintson a visszaállításhoz                                                                                              |
 | locked (phase 6)                   | Centre locked                                                                                      | Középpont rögzítve                                                                                                                        |
@@ -498,8 +499,8 @@ _After the r2 upgrade:_
   ```
 
 - [x] Icons: a white ring on Lagoon, echoing the halo. No letters, no brand, nothing camera-like.
-- [ ] `src/service-worker.ts` using `$service-worker` (`build`, `files`, `version`): precache everything in a versioned cache, delete old caches on activate, cache-first for same-origin GET, navigation requests fall back to the cached `/`. Cache nothing else.
-- [ ] Install hint on the intro, iOS only, only when not running standalone. Dismissible for the current session (a component flag, not storage).
+- [x] `src/service-worker.ts` using `$service-worker` (`build`, `files`, `version`): precache everything in a versioned cache, delete old caches on activate, cache-first for same-origin GET, navigation requests fall back to the cached `/`. Cache nothing else.
+- [x] Install hint on the intro, iOS only, only when not running standalone. Dismissible for the current session (a component flag, not storage).
 
 **Prerequisite (measured in phase 1).** iOS cannot be made to trust the certificate `dev:https`
 generates, so a page served that way cannot be launched from the Home Screen at all. Phase 4 needs

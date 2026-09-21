@@ -1,5 +1,7 @@
 <script lang="ts">
+	import Close from '$lib/icons/Close.svelte';
 	import type { Strings } from '$lib/i18n';
+	import { isIos, isStandalone } from '$lib/platform';
 
 	let {
 		t,
@@ -10,6 +12,16 @@
 		busy?: boolean;
 		onstart: () => void;
 	} = $props();
+
+	// Only iOS needs telling, and only while the app is still a web page.
+	// Dismissal lasts for this visit only: nothing is stored — hard rule 2.
+	let dismissed = $state(false);
+	const offerInstall =
+		isIos(navigator.userAgent, navigator.maxTouchPoints) &&
+		!isStandalone(
+			window.matchMedia('(display-mode: standalone)').matches,
+			(navigator as Navigator & { standalone?: boolean }).standalone
+		);
 </script>
 
 <main
@@ -28,14 +40,30 @@
 			<p class="mt-8 text-note">{t.privacy}</p>
 		</div>
 
-		<button
-			class="btn w-full btn-primary"
-			type="button"
-			disabled={busy}
-			aria-busy={busy}
-			onclick={onstart}
-		>
-			{t.start}
-		</button>
+		<div>
+			{#if offerInstall && !dismissed}
+				<div class="mb-6 flex items-start gap-2 border-t border-base-300 pt-4">
+					<p class="flex-1 text-note">{t.installHint}</p>
+					<button
+						class="-mt-3 -mr-3 flex min-h-12 min-w-12 items-center justify-center"
+						type="button"
+						aria-label={t.dismiss}
+						onclick={() => (dismissed = true)}
+					>
+						<Close size={20} />
+					</button>
+				</div>
+			{/if}
+
+			<button
+				class="btn w-full btn-primary"
+				type="button"
+				disabled={busy}
+				aria-busy={busy}
+				onclick={onstart}
+			>
+				{t.start}
+			</button>
+		</div>
 	</div>
 </main>

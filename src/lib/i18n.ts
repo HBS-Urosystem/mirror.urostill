@@ -21,6 +21,7 @@ const en = {
 	errInsecure: 'The camera needs a secure (https) connection.',
 	errUnsupported: "This browser can't show the camera. Open the page in Safari or Chrome.",
 	installHint: 'For a full-screen mirror, add this page to your Home Screen.',
+	dismiss: 'Dismiss',
 	lightOff: 'Light: off',
 	lightSoft: 'Light: soft',
 	lightBright: 'Light: bright',
@@ -49,6 +50,7 @@ const hu: Strings = {
 	errUnsupported:
 		'Ez a böngésző nem tudja megjeleníteni a kamerát. Nyissa meg az oldalt Safariban vagy Chrome-ban.',
 	installHint: 'Teljes képernyős tükörhöz tegye ki az oldalt a kezdőképernyőre.',
+	dismiss: 'Bezárás',
 	lightOff: 'Fény: ki',
 	lightSoft: 'Fény: halvány',
 	lightBright: 'Fény: erős',
