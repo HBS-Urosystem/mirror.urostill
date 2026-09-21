@@ -403,6 +403,18 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - Smooth on a mid-range Android phone (frame time in the debug overlay).
 - Unit tests pass.
 
+**Device findings** (same iPhone, Safari tab)
+
+- Framing, no page scroll or page zoom, pinch pinned under the fingers and the one-finger handover
+  all confirmed. The centring fix is visible: the crop now comes from the middle of the frame.
+- The picture itself never shows an empty edge. The only strips left in landscape are Safari's own
+  letterbox outside the layout viewport, now black.
+- **4× is still usable**, which on this device is about 0.23 source pixels per device pixel. One
+  device is not the `ZOOM_MAX` decision, but it is the first real bound on it.
+- Phase 4 will need real HTTPS to test on a phone: iOS cannot be made to trust the self-signed
+  certificate `dev:https` generates, so a page served that way cannot be launched from the Home
+  Screen at all. This also blocks the open question about the landscape letterbox in a standalone app.
+
 ### Phase 3 — Halo and glass UI
 
 - [ ] Halo levels off / soft / bright from `config.ts`, default bright. The halo is the page background (`#FFF`), and the stage is inset by the halo width on all sides. Safe-area regions are white too.
