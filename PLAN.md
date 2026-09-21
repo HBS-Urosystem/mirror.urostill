@@ -370,6 +370,24 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - Switching to another app turns the camera indicator off; coming back restarts the mirror.
 - Every error state can be reached and reads clearly.
 
+**Device findings so far** (iPhone 393×852, iOS 26, Safari tab, dev server)
+
+- Live mirrored picture, wake lock and app switching all behave. Error states not yet exercised.
+- 1080p30 from the front camera; frame time 16.x ms.
+- **Source pixels per device pixel is 0.92 at 1×**, so it is 0.23 at 4× and 0.18 at 5×. CSS zoom is
+  already interpolating at 1×. This is the strongest input yet for the phase 5 `ZOOM_MAX` decision,
+  and an argument for pulling the native camera zoom out of the backlog.
+- **In a Safari tab in landscape the layout viewport is the safe area, not the screen**: 734×333 out
+  of 852×393, with `safe-area-inset-left/right` both reporting 0, in spite of `viewport-fit=cover`.
+  The stage measures exactly the same 734×333, so the app fills everything it is given — nothing
+  inside the page can paint into the missing 2×59pt. Open question: whether an installed
+  (home-screen) app gets the whole screen. Until that is answered the document background is black
+  while the mirror runs, so the strip Safari paints outside the viewport is dark rather than a
+  bright bar beside the picture. From phase 3 that strip will be halo white, which is what the
+  design wants there anyway.
+- Do **not** make the stage `position: fixed` with an opaque background: Safari 26 fails to paint
+  fully opaque fixed layers across the screen.
+
 ### Phase 2 — Zoom and pan
 
 - [ ] `viewport.ts` with unit tests: clamp, pan, pinch about a midpoint, reset, re-derivation after resize and rotation, zoom limits.
