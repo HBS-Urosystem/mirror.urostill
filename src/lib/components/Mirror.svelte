@@ -13,7 +13,7 @@
 		type HaloLevel
 	} from '$lib/config';
 	import { attachGestures, type GestureHandlers } from '$lib/gestures.svelte';
-	import { easeOutCubic, haloWidth, maxHaloWidth, nextHaloLevel, stageSize } from '$lib/halo';
+	import { easeOutCubic, haloWidth, nextHaloLevel, stageSize } from '$lib/halo';
 	import type { Strings } from '$lib/i18n';
 	import {
 		centreContentPoint,
@@ -77,8 +77,6 @@
 
 	const viewport = $derived({ w: rootW, h: rootH });
 	const halo = $derived(haloWidth(level, viewport) * openProgress);
-	/** Overlays sit against the widest halo, so they never move. */
-	const overlayInset = $derived(maxHaloWidth(viewport));
 	/**
 	 * Computed rather than measured. A ResizeObserver reports the stage a frame
 	 * late, which during the halo opening would leave the picture briefly too
@@ -258,7 +256,7 @@
 	{#if controlsVisible}
 		<div
 			class="pointer-events-none absolute inset-x-0 flex justify-center"
-			style:bottom="calc(max({overlayInset}px, env(safe-area-inset-bottom)) + 0.75rem)"
+			style:bottom="calc(env(safe-area-inset-bottom) + 0.75rem)"
 			transition:fade={{ duration: reducedMotion.current ? 0 : PILL_FADE_MS }}
 		>
 			<div class="pointer-events-auto">
@@ -290,7 +288,6 @@
 			{zoom}
 			{upgradeState}
 			{wakeLockStatus}
-			offset={overlayInset}
 		/>
 	{/if}
 </div>

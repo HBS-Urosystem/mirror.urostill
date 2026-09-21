@@ -12,8 +12,7 @@
 		cover,
 		zoom,
 		upgradeState,
-		wakeLockStatus,
-		offset = 0
+		wakeLockStatus
 	}: {
 		stream: MediaStream | null;
 		video: HTMLVideoElement | null;
@@ -23,8 +22,6 @@
 		zoom: number;
 		upgradeState: UpgradeState;
 		wakeLockStatus: WakeLockStatus;
-		/** Kept clear of the halo. */
-		offset?: number;
 	} = $props();
 
 	/** Not in the standard typings: it comes from the Image Capture extensions. */
@@ -136,8 +133,8 @@
 </script>
 
 <div
-	class="pointer-events-none absolute top-0 left-0 rounded-lg bg-black/70 px-2.5 pb-2 font-mono text-[11px] leading-snug text-white"
-	style="padding-top: calc(0.5rem + env(safe-area-inset-top)); margin-left: calc({offset}px + 0.5rem); margin-top: calc({offset}px + 0.5rem)"
+	class="pointer-events-none absolute top-0 left-0 m-2 rounded-lg bg-black/70 px-2.5 pb-2 font-mono text-[11px] leading-snug text-white"
+	style="padding-top: calc(0.5rem + env(safe-area-inset-top))"
 >
 	{#each rows as [label, value] (label)}
 		<div><span class="opacity-60">{label}</span> {value}</div>
