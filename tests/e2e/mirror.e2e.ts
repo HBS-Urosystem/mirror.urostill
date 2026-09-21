@@ -1,5 +1,9 @@
 import { expect, test } from '@playwright/test';
 
+// A phone-shaped window, so the picture really does overflow the stage and the
+// cover check below has something to catch.
+test.use({ viewport: { width: 390, height: 844 } });
+
 test('start plays a mirrored picture that covers the stage, exit returns to the intro', async ({
 	page
 }) => {

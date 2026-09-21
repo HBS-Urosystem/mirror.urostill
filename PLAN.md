@@ -390,10 +390,10 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 
 ### Phase 2 — Zoom and pan
 
-- [ ] `viewport.ts` with unit tests: clamp, pan, pinch about a midpoint, reset, re-derivation after resize and rotation, zoom limits.
-- [ ] `gestures.svelte.ts` with tap, double tap, pan, pinch and pinch-to-pan handover.
-- [ ] iOS `gesturestart` / `gesturechange` prevention on the stage.
-- [ ] Zoom range and start value from `config.ts`.
+- [x] `viewport.ts` with unit tests: clamp, pan, pinch about a midpoint, reset, re-derivation after resize and rotation, zoom limits.
+- [x] `gestures.svelte.ts` with tap, double tap, pan, pinch and pinch-to-pan handover.
+- [x] iOS `gesturestart` / `gesturechange` prevention on the stage.
+- [x] Zoom range and start value from `config.ts`.
 
 **Acceptance**
 
