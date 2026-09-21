@@ -41,15 +41,21 @@ test('the light button cycles bright → off → soft, and says which it is', as
 	const light = () => page.getByRole('button', { name: /^Light: / });
 	await expect(light()).toHaveAttribute('aria-label', 'Light: bright');
 
+	// The icon says it too: eight rays, none, four.
+	const rays = () => light().locator('line').count();
+	expect(await rays()).toBe(8);
+
 	await light().click();
 	await expect(light()).toHaveAttribute('aria-label', 'Light: off');
 	await haloSettled(page);
 	expect((await halo(page)).left).toBeCloseTo(0, 0);
+	expect(await rays()).toBe(0);
 
 	await light().click();
 	await expect(light()).toHaveAttribute('aria-label', 'Light: soft');
 	await haloSettled(page);
 	expect((await halo(page)).left).toBeCloseTo(SHORT_SIDE * LEVELS.soft, 0);
+	expect(await rays()).toBe(4);
 });
 
 test('the picture still covers the stage after the halo changes width', async ({ page }) => {

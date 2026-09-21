@@ -26,7 +26,7 @@
 
 <div class="flex items-center gap-0.5 rounded-full glass-smoke p-1">
 	<button class="pill" type="button" aria-label={lightLabel} onclick={onlight}>
-		<Sun />
+		<Sun {level} />
 	</button>
 	<button
 		class="pill readout"

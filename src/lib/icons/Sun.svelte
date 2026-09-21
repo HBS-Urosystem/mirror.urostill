@@ -1,5 +1,14 @@
 <script lang="ts">
-	let { size = 24, class: className = '' }: { size?: number; class?: string } = $props();
+	import type { HaloLevel } from '$lib/config';
+	import { sunRays } from '$lib/halo';
+
+	let {
+		level,
+		size = 24,
+		class: className = ''
+	}: { level: HaloLevel; size?: number; class?: string } = $props();
+
+	const rays = $derived(sunRays(level));
 </script>
 
 <svg
@@ -15,6 +24,10 @@
 	aria-hidden="true"
 >
 	<circle cx="12" cy="12" r="4.5" />
-	<path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2" />
-	<path d="M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M18.7 5.3l-1.6 1.6M6.9 17.1l-1.6 1.6" />
+	{#each rays as ray (ray.x2 + ':' + ray.y2)}
+		<line x1={ray.x1} y1={ray.y1} x2={ray.x2} y2={ray.y2} />
+	{/each}
+	{#if level === 'off'}
+		<path d="M5 19L19 5" />
+	{/if}
 </svg>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { HALO_LEVELS } from '../../src/lib/config';
-import { easeOutCubic, haloWidth, nextHaloLevel, stageSize } from '../../src/lib/halo';
+import { easeOutCubic, haloWidth, nextHaloLevel, stageSize, sunRays } from '../../src/lib/halo';
 
 describe('haloWidth', () => {
 	it('measures against the short side, whichever way the phone is held', () => {
@@ -56,5 +56,41 @@ describe('easeOutCubic', () => {
 	it('clamps, so a late frame cannot overshoot', () => {
 		expect(easeOutCubic(-1)).toBe(0);
 		expect(easeOutCubic(2)).toBe(1);
+	});
+});
+
+describe('sunRays', () => {
+	it('gives none, four and eight — countable at a glance', () => {
+		expect(sunRays('off')).toHaveLength(0);
+		expect(sunRays('soft')).toHaveLength(4);
+		expect(sunRays('bright')).toHaveLength(8);
+	});
+
+	it('makes bright rays reach further than soft ones', () => {
+		const reach = (level: 'soft' | 'bright') => {
+			const [first] = sunRays(level);
+			return Math.hypot(first.x2 - 12, first.y2 - 12);
+		};
+		expect(reach('bright')).toBeGreaterThan(reach('soft'));
+	});
+
+	it('starts straight up and spaces the rays evenly', () => {
+		const rays = sunRays('soft');
+		expect(rays[0].x2).toBeCloseTo(12, 6);
+		expect(rays[0].y2).toBeLessThan(12);
+		// Four rays a quarter turn apart: up, right, down, left.
+		expect(rays[1].y2).toBeCloseTo(12, 6);
+		expect(rays[1].x2).toBeGreaterThan(12);
+	});
+
+	it('keeps every ray inside the 24×24 icon box', () => {
+		for (const level of ['soft', 'bright'] as const) {
+			for (const ray of sunRays(level)) {
+				for (const value of [ray.x1, ray.y1, ray.x2, ray.y2]) {
+					expect(value).toBeGreaterThanOrEqual(1);
+					expect(value).toBeLessThanOrEqual(23);
+				}
+			}
+		}
 	});
 });
