@@ -83,12 +83,15 @@
 @layer base {
 	html {
 		-webkit-text-size-adjust: 100%;
-		height: 100%;
 	}
 
 	body {
-		height: 100%;
 		overscroll-behavior: none;
+	}
+
+	/* Screens size themselves with dvh; daisyUI reads the button size from --fontsize. */
+	.btn {
+		--fontsize: var(--text-body);
 	}
 
 	:focus-visible {

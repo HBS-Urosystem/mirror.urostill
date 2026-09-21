@@ -353,15 +353,15 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 
 ### Phase 1 — Camera and mirror
 
-- [ ] Intro screen with copy from `i18n.ts`; language from `navigator.language` (`hu*` → Hungarian, otherwise English).
-- [ ] `camera.svelte.ts` with the constraints and error mapping above; `ErrorView` with Try again and Exit.
-- [ ] Stage with explicit cover sizing (section 2), mirrored video, `autoplay muted playsinline`.
-- [ ] Resize, rotation and stream-size handling.
-- [ ] Suspend and resume on visibility change and `pagehide`.
-- [ ] `wakelock.svelte.ts`: `navigator.wakeLock.request('screen')` when live; re-acquire on `visibilitychange` → visible; release on exit and suspend. If unsupported, the mirror still works; debug shows the status.
-- [ ] On Start, call `requestFullscreen()` where it exists (Android Chrome); ignore failures.
-- [ ] `DebugOverlay` behind `?debug=1`: stream size and frame rate from `track.getSettings()`, facing mode, current zoom, **source pixels per screen pixel at the current zoom** (the quality indicator for phase 5), wake lock status, frame time.
-- [ ] Playwright smoke test: intro renders → Start → video is playing (`readyState ≥ 2`) → Exit returns to the intro.
+- [x] Intro screen with copy from `i18n.ts`; language from `navigator.language` (`hu*` → Hungarian, otherwise English).
+- [x] `camera.svelte.ts` with the constraints and error mapping above; `ErrorView` with Try again and Exit.
+- [x] Stage with explicit cover sizing (section 2), mirrored video, `autoplay muted playsinline`.
+- [x] Resize, rotation and stream-size handling.
+- [x] Suspend and resume on visibility change and `pagehide`.
+- [x] `wakelock.svelte.ts`: `navigator.wakeLock.request('screen')` when live; re-acquire on `visibilitychange` → visible; release on exit and suspend. If unsupported, the mirror still works; debug shows the status.
+- [x] On Start, call `requestFullscreen()` where it exists (Android Chrome); ignore failures.
+- [x] `DebugOverlay` behind `?debug=1`: stream size and frame rate from `track.getSettings()`, facing mode, current zoom, **source pixels per screen pixel at the current zoom** (the quality indicator for phase 5), wake lock status, frame time.
+- [x] Playwright smoke test: intro renders → Start → video is playing (`readyState ≥ 2`) → Exit returns to the intro.
 
 **Acceptance — to be checked on real phones**
 

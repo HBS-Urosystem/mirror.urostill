@@ -28,3 +28,9 @@ export const TAP_SLOP_PX = 8;
 export const TAP_MAX_MS = 250;
 export const DOUBLE_TAP_MS = 300;
 export const DOUBLE_TAP_SLOP_PX = 30;
+
+/**
+ * Camera constraints. All `ideal`, never `exact`: a desktop webcam in dev and
+ * a phone that cannot do 1080p should both still produce a picture.
+ */
+export const CAMERA_IDEAL = { width: 1920, height: 1080, frameRate: 30 } as const;
