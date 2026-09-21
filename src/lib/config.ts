@@ -5,10 +5,23 @@
 
 /** Zoom is a multiplier on the cover-fitted picture. */
 export const ZOOM_MIN = 1;
-/** Revisit after the phase 5 device tests. */
+/**
+ * Above ~2–2.5× at 1080p, a normally sighted viewer already sees every camera
+ * pixel: more zoom enlarges but doesn't sharpen. Kept at 5× because
+ * enlargement itself helps people with reduced vision. Revisit after phase 5.
+ */
 export const ZOOM_MAX = 5;
 /** Start wide, so the user can aim the phone before magnifying. */
 export const ZOOM_START = 1;
+
+/** Resolution upgrade (PLAN §2, Camera). */
+export const RES_MAX_LONG_SIDE = 3840;
+/** Below this measured frame rate the upgrade is given back. */
+export const RES_FPS_FLOOR = 24;
+/** How long to count frames after upgrading. */
+export const RES_PROBE_MS = 2000;
+/** Phase 5b: apply native zoom this long after a gesture ends. */
+export const NATIVE_ZOOM_SETTLE_MS = 200;
 
 /** Halo width as a fraction of the short side of the screen. */
 export const HALO_LEVELS = { off: 0, soft: 0.08, bright: 0.16 } as const;

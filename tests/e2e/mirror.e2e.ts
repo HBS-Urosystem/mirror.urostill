@@ -72,3 +72,15 @@ test('hiding the page releases the camera, coming back restarts it', async ({ pa
 		.toBeGreaterThanOrEqual(2);
 	await expect(page.getByRole('button', { name: 'Start mirror' })).toHaveCount(0);
 });
+
+test('the resolution probe runs and the fps guard settles it', async ({ page }) => {
+	await page.goto('/?debug=1');
+	await page.getByRole('button', { name: 'Start mirror' }).click();
+
+	// The fake device advertises 4K but delivers 20 fps, so this rig always
+	// exercises the fallback. A real phone may end up "upgraded" instead.
+	const mode = page.locator('div', { hasText: /^mode / }).last();
+	await expect(mode).toContainText(/upgraded|fellback/, { timeout: 15000 });
+	await expect(page.locator('div', { hasText: /^camera max / }).last()).toContainText('×');
+	await expect(page.locator('div', { hasText: /^fps / }).last()).toContainText('meas');
+});

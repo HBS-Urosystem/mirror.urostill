@@ -1,25 +1,41 @@
 <script lang="ts">
 	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
+	import type { UpgradeState } from '$lib/camera.svelte';
 	import { sourcePixelsPerScreenPixel, type Size } from '$lib/viewport';
 	import type { WakeLockStatus } from '$lib/wakelock.svelte';
 
 	let {
 		stream,
+		video,
 		streamSize,
 		stageSize,
 		cover,
 		zoom,
+		upgradeState,
 		wakeLockStatus
 	}: {
 		stream: MediaStream | null;
+		video: HTMLVideoElement | null;
 		streamSize: Size;
 		stageSize: Size;
 		cover: number;
 		zoom: number;
+		upgradeState: UpgradeState;
 		wakeLockStatus: WakeLockStatus;
 	} = $props();
 
+	/** Not in the standard typings: it comes from the Image Capture extensions. */
+	type ZoomCapability = { min: number; max: number; step?: number };
+
 	const dpr = window.devicePixelRatio || 1;
+
+	const track = $derived(stream?.getVideoTracks()[0] ?? null);
+	const settings: MediaTrackSettings = $derived(track?.getSettings() ?? {});
+	const capabilities: MediaTrackCapabilities | null = $derived(track?.getCapabilities?.() ?? null);
+	const zoomCapability = $derived(
+		(capabilities as (MediaTrackCapabilities & { zoom?: ZoomCapability }) | null)?.zoom
+	);
+	const quality = $derived(sourcePixelsPerScreenPixel(cover, zoom, dpr));
 
 	// Whether the stage really reaches the edge of the screen, and by how much
 	// the notch and the home indicator eat into it.
@@ -35,8 +51,37 @@
 			.join('/');
 	});
 
-	const settings: MediaTrackSettings = $derived(stream?.getVideoTracks()[0]?.getSettings() ?? {});
-	const quality = $derived(sourcePixelsPerScreenPixel(cover, zoom, dpr));
+	/**
+	 * Frames actually delivered, counted rather than reported: a phone will
+	 * accept a 4K constraint and then quietly send 12 fps.
+	 */
+	let measuredFps = $state(0);
+	$effect(() => {
+		const element = video;
+		const request = element?.requestVideoFrameCallback?.bind(element);
+		if (!element || !request) return;
+
+		let handle = 0;
+		let frames = 0;
+		let since = performance.now();
+		let cancelled = false;
+		const tick = () => {
+			if (cancelled) return;
+			frames++;
+			const elapsed = performance.now() - since;
+			if (elapsed >= 1000) {
+				measuredFps = (frames * 1000) / elapsed;
+				frames = 0;
+				since = performance.now();
+			}
+			handle = request(tick);
+		};
+		handle = request(tick);
+		return () => {
+			cancelled = true;
+			element.cancelVideoFrameCallback?.(handle);
+		};
+	});
 
 	// The rAF loop only exists while the overlay is mounted, i.e. under ?debug=1.
 	let frameMs = $state(0);
@@ -59,11 +104,24 @@
 		['viewport', `${innerWidth.current ?? 0}×${innerHeight.current ?? 0}`],
 		['stage', `${Math.round(stageSize.w)}×${Math.round(stageSize.h)}`],
 		['safe t/r/b/l', safeArea],
-		['stream', `${streamSize.w}×${streamSize.h}`],
 		[
-			'track',
-			`${settings.width ?? '?'}×${settings.height ?? '?'} @ ${settings.frameRate?.toFixed(0) ?? '?'} fps`
+			'camera max',
+			capabilities
+				? `${capabilities.width?.max ?? '?'}×${capabilities.height?.max ?? '?'} @ ${capabilities.frameRate?.max?.toFixed(0) ?? '?'}`
+				: 'no capabilities'
 		],
+		[
+			'native zoom',
+			zoomCapability
+				? `${zoomCapability.min}–${zoomCapability.max} / ${zoomCapability.step ?? '?'}`
+				: 'no zoom'
+		],
+		['mode', `${settings.width ?? '?'}×${settings.height ?? '?'} ${upgradeState}`],
+		[
+			'fps',
+			`${measuredFps ? measuredFps.toFixed(1) : '—'} meas / ${settings.frameRate?.toFixed(0) ?? '?'} rep`
+		],
+		['stream', `${streamSize.w}×${streamSize.h}`],
 		['facing', settings.facingMode ?? '—'],
 		['zoom', `${zoom.toFixed(2)}×`],
 		['cover', cover.toFixed(3)],

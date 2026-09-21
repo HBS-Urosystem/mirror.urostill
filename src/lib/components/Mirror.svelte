@@ -1,5 +1,6 @@
 <script lang="ts">
 	import DebugOverlay from './DebugOverlay.svelte';
+	import type { UpgradeState } from '$lib/camera.svelte';
 	import { ZOOM_MAX, ZOOM_MIN, ZOOM_START } from '$lib/config';
 	import { attachGestures, type GestureHandlers } from '$lib/gestures.svelte';
 	import type { Strings } from '$lib/i18n';
@@ -20,16 +21,21 @@
 		t,
 		stream,
 		debug = false,
+		upgradeState,
 		wakeLockStatus,
 		onexit,
-		onplayfail
+		onplayfail,
+		onvideoready
 	}: {
 		t: Strings;
 		stream: MediaStream | null;
 		debug?: boolean;
+		upgradeState: UpgradeState;
 		wakeLockStatus: WakeLockStatus;
 		onexit: () => void;
 		onplayfail: (error: unknown) => void;
+		/** The picture is running; the resolution probe can start. */
+		onvideoready: (video: HTMLVideoElement) => void;
 	} = $props();
 
 	let stageElement = $state<HTMLElement | null>(null);
@@ -127,9 +133,15 @@
 		}
 
 		let cancelled = false;
-		element.play().then(readIntrinsicSize, (error: unknown) => {
-			if (!cancelled) onplayfail(error);
-		});
+		element.play().then(
+			() => {
+				readIntrinsicSize();
+				if (!cancelled) onvideoready(element);
+			},
+			(error: unknown) => {
+				if (!cancelled) onplayfail(error);
+			}
+		);
 
 		return () => {
 			cancelled = true;
@@ -185,7 +197,16 @@
 	{/if}
 
 	{#if debug}
-		<DebugOverlay {stream} streamSize={source} stageSize={stage} {cover} {zoom} {wakeLockStatus} />
+		<DebugOverlay
+			{stream}
+			{video}
+			streamSize={source}
+			stageSize={stage}
+			{cover}
+			{zoom}
+			{upgradeState}
+			{wakeLockStatus}
+		/>
 	{/if}
 </div>
 

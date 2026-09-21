@@ -26,6 +26,11 @@ export const CHECKS = [
 	{ rule: 1, pattern: /\bgrabFrame\b/, why: 'no frame capture' },
 	{ rule: 1, pattern: /\btoDataURL\b/, why: 'no image export' },
 	{ rule: 1, pattern: /\btoBlob\b/, why: 'no image export' },
+	{
+		rule: 1,
+		pattern: /\breadPixels\b/,
+		why: 'no pixel readback (see the WebGL upscaling backlog item)'
+	},
 	{ rule: 1, pattern: /\bdownload\s*=/, why: 'no downloads' },
 	{ rule: 1, pattern: /<a\b[^>]*\bdownload\b/, why: 'no downloads' },
 	{ rule: 2, pattern: /\blocalStorage\b/, why: 'no persistence' },

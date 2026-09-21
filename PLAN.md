@@ -2,11 +2,16 @@
 
 Read `CLAUDE.md` first. Its hard rules override anything in this plan.
 
+## Revisions
+
+- **r2 — resolution.** Measured source px per screen px at 1080p: 0.92 / 0.46 / 0.31 / 0.23 / 0.18 at 1×–5×. The 1080p limit may be our own `ideal` constraint rather than the sensor. Changes: capability-based resolution upgrade with an fps guard (section 2 Camera, phase 1); capabilities in the debug overlay (phase 1); a resolution chart instead of guesswork in the device tests (phase 5); native zoom promoted from the backlog to a spike (new phase 5b); WebGL upscaling added to the backlog; `readPixels` added to the privacy check; new config values; phase 7 measures worker time at the upgraded resolution.
+
 ## Goal
 
 A lighted mirror on the user's own phone: front camera, mirrored, pinch to zoom, drag to position, screen kept awake, and a white frame around the picture that works as a light source. No capture, no storage, no network.
 
 - **MVP:** phases 0–5.
+- **Spike after the MVP:** phase 5b (native camera zoom), only if phase 5 finds devices that expose it.
 - **Post-MVP:** phase 6 (anchor lock) and phase 7 (stabilisation). When the user positions the picture with one finger, that centre locks and stays centred while zooming (phase 6) and when the phone or the scene moves (phase 7).
 
 ---
@@ -233,6 +238,16 @@ navigator.mediaDevices.getUserMedia({
 
 The `<video>` element: `autoplay muted playsinline`, `srcObject = stream`, then `await video.play()` and handle rejection.
 
+**Resolution upgrade (r2).** 1080p is only the safe starting point. Front sensors are usually 8–12 MP, and a higher stream resolution directly improves zoomed detail: at 2160p every source-per-screen figure doubles, so 5× looks like 1080p at 2.5×.
+
+1. Start with the 1080p constraints above, so the picture appears quickly.
+2. Read `track.getCapabilities?.()`. The method may be missing; then stay at 1080p.
+3. If `width.max × height.max` exceeds 1920 × 1080, call `track.applyConstraints()` with `ideal` width and height at the capability maximum, capped so the long side is at most `RES_MAX_LONG_SIDE`, keeping `frameRate: { ideal: 30 }`. Accept whatever aspect ratio the browser returns (a 4:3 mode shows more of the sensor, and the stage geometry recomputes on the video `resize` event anyway).
+4. **fps guard:** count frames for `RES_PROBE_MS` with `requestVideoFrameCallback` where available (otherwise trust `track.getSettings().frameRate`). If below `RES_FPS_FLOOR`, re-apply the 1080p constraints.
+5. Remember the chosen mode in memory for the session, so resuming after `suspended` doesn't probe again. Never persist it (hard rule 2).
+
+The upgrade happens once per start, during the halo opening. Any brief stream interruption during `applyConstraints` is acceptable there.
+
 | Condition                                | Error key                                         |
 | ---------------------------------------- | ------------------------------------------------- |
 | `!window.isSecureContext`                | `errInsecure`                                     |
@@ -261,7 +276,7 @@ All of the following live in `viewport.ts` as pure functions:
 - **Pan:** `t ← clamp(t + Δpointer)`.
 - **Pinch** around midpoint `m` (keeps the content point under the fingers fixed): `t' = clamp(m − (s'/s)·(m − t))`, with `s'` clamped to `[ZOOM_MIN, ZOOM_MAX]`.
 - **Centre point:** `c₀ = −t / s`.
-- **Normalised picture coordinates** (used for anchors so they survive resizes and rotation): `u = c.x / Vw + 0.5`, `v = c.y / Vh + 0.5`, in mirrored picture space.
+- **Normalised picture coordinates** (used for anchors so they survive resizes and rotation): `u = c.x / Vw + 0.5`, `v = c.y / Vh + 0.5`, in mirrored picture space. If phase 5b ships native zoom, these must refer to the full sensor frame, not the delivered crop; phase 5b defines the mapping.
 - **Camera → content displacement** (phase 7): a shift `(dx, dy)` in raw camera pixels is `(−k·dx, k·dy)` in content space. x is negated because the picture is mirrored.
 
 ### Gestures (`gestures.svelte.ts`)
@@ -280,8 +295,15 @@ Pointer Events on the stage, `setPointerCapture`, `touch-action: none`.
 
 ```ts
 export const ZOOM_MIN = 1;
-export const ZOOM_MAX = 5; // revisit after the phase 5 device tests
+// Above ~2–2.5× at 1080p, a normally sighted viewer already sees every camera pixel:
+// more zoom enlarges but doesn't sharpen. Kept at 5× because enlargement itself helps
+// people with reduced vision. Revisit after the phase 5 device tests.
+export const ZOOM_MAX = 5;
 export const ZOOM_START = 1; // start wide so the user can aim the phone
+export const RES_MAX_LONG_SIDE = 3840; // cap for the resolution upgrade
+export const RES_FPS_FLOOR = 24; // below this, fall back to 1080p
+export const RES_PROBE_MS = 2000; // how long to count frames after upgrading
+export const NATIVE_ZOOM_SETTLE_MS = 200; // phase 5b: apply native zoom this long after a gesture ends
 export const HALO_LEVELS = { off: 0, soft: 0.08, bright: 0.16 } as const; // × short side of the screen
 export const HALO_DEFAULT = 'bright';
 export const HALO_OPEN_MS = 400;
@@ -301,10 +323,11 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - [x] SvelteKit + Svelte 5 + TypeScript strict; `adapter-static`; `ssr = false`, `prerender = true`.
 - [x] Tailwind v4 via `@tailwindcss/vite`; daisyUI 5 via `@plugin "daisyui"`; theme `halo` with the tokens from section 1.
 - [x] Self-hosted font as described in section 1.
-- [x] CSP through SvelteKit (it hashes its own inline bootstrap script into a `<meta>` CSP for prerendered pages). Since SvelteKit 2.62 the kit config is passed straight to the Vite plugin and there is no `svelte.config.js`:
+- [x] CSP through SvelteKit (it hashes its own inline bootstrap script into a `<meta>` CSP for prerendered pages):
 
   ```js
-  // vite.config.ts → sveltekit({ ... })
+  // vite.config.ts → sveltekit({ ... }) — since SvelteKit 2.62 the kit config
+  // goes straight to the Vite plugin, and `sv create` writes no svelte.config.js
   csp: {
     mode: 'hash',
     directives: {
@@ -339,10 +362,10 @@ export const DOUBLE_TAP_SLOP_PX = 30;
   ```
 
 - [x] `app.html`: `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`, `<meta name="robots" content="noindex, nofollow">`, `theme-color #FFFFFF`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style = black-translucent`, apple-touch-icon, manifest link.
-- [x] `scripts/check-privacy.mjs`: scan `src/` and fail on any of `MediaRecorder`, `takePhoto`, `grabFrame`, `toDataURL`, `toBlob`, `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `sendBeacon`, `XMLHttpRequest`, `WebSocket`, `EventSource`, ` download=`, `fetch(` with an absolute `http(s)://` URL, and `getImageData` outside `src/lib/motion/`. Wire it into `npm run check`.
+- [x] `scripts/check-privacy.mjs`: scan `src/` and fail on any of `MediaRecorder`, `takePhoto`, `grabFrame`, `toDataURL`, `toBlob`, `readPixels` (r2), `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `sendBeacon`, `XMLHttpRequest`, `WebSocket`, `EventSource`, ` download=`, `fetch(` with an absolute `http(s)://` URL, and `getImageData` outside `src/lib/motion/`. Wire it into `npm run check`.
 - [x] Vitest configured. Playwright configured with Chromium flags `--use-fake-ui-for-media-stream` and `--use-fake-device-for-media-stream`.
 - [x] `npm run dev:https` using `@vitejs/plugin-basic-ssl` (dev only), for LAN phone checks. Note: a phone on plain `http://192.168.x.x` gets no camera.
-- [ ] Netlify (needs a person with the account): `netlify.toml` is in the repo with build `npm run build`, publish `build`. Deploy previews on; this is the main way to test on phones (real HTTPS, no certificate warnings). Turn off form detection and snippet injection in the site settings.
+- [ ] Netlify (needs the account holder): `netlify.toml` is in the repo — build `npm run build`, publish `build`. Deploy previews on; this is the main way to test on phones (real HTTPS, no certificate warnings). Turn off form detection and snippet injection in the site settings.
 
 **Acceptance**
 
@@ -355,12 +378,17 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 
 - [x] Intro screen with copy from `i18n.ts`; language from `navigator.language` (`hu*` → Hungarian, otherwise English).
 - [x] `camera.svelte.ts` with the constraints and error mapping above; `ErrorView` with Try again and Exit.
+- [x] Resolution upgrade with the fps guard (section 2, Camera). The chosen mode lives in memory for the session only.
 - [x] Stage with explicit cover sizing (section 2), mirrored video, `autoplay muted playsinline`.
 - [x] Resize, rotation and stream-size handling.
 - [x] Suspend and resume on visibility change and `pagehide`.
 - [x] `wakelock.svelte.ts`: `navigator.wakeLock.request('screen')` when live; re-acquire on `visibilitychange` → visible; release on exit and suspend. If unsupported, the mirror still works; debug shows the status.
 - [x] On Start, call `requestFullscreen()` where it exists (Android Chrome); ignore failures.
-- [x] `DebugOverlay` behind `?debug=1`: stream size and frame rate from `track.getSettings()`, facing mode, current zoom, **source pixels per screen pixel at the current zoom** (the quality indicator for phase 5), wake lock status, frame time.
+- [x] `DebugOverlay` behind `?debug=1`, showing:
+  - **capabilities** from `track.getCapabilities()`: max width × height, max frame rate, and the `zoom` range and step if present (or "no zoom");
+  - the mode in use from `track.getSettings()` and whether the upgrade succeeded, fell back, or wasn't attempted;
+  - **measured** fps (frame counter), next to the reported one;
+  - facing mode, current zoom, **source pixels per screen pixel at the current zoom**, wake lock status, frame time.
 - [x] Playwright smoke test: intro renders → Start → video is playing (`readyState ≥ 2`) → Exit returns to the intro.
 
 **Acceptance — to be checked on real phones**
@@ -369,24 +397,7 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - The screen stays on for 10 minutes untouched.
 - Switching to another app turns the camera indicator off; coming back restarts the mirror.
 - Every error state can be reached and reads clearly.
-
-**Device findings so far** (iPhone 393×852, iOS 26, Safari tab, dev server)
-
-- Live mirrored picture, wake lock and app switching all behave. Error states not yet exercised.
-- 1080p30 from the front camera; frame time 16.x ms.
-- **Source pixels per device pixel is 0.92 at 1×**, so it is 0.23 at 4× and 0.18 at 5×. CSS zoom is
-  already interpolating at 1×. This is the strongest input yet for the phase 5 `ZOOM_MAX` decision,
-  and an argument for pulling the native camera zoom out of the backlog.
-- **In a Safari tab in landscape the layout viewport is the safe area, not the screen**: 734×333 out
-  of 852×393, with `safe-area-inset-left/right` both reporting 0, in spite of `viewport-fit=cover`.
-  The stage measures exactly the same 734×333, so the app fills everything it is given — nothing
-  inside the page can paint into the missing 2×59pt. Open question: whether an installed
-  (home-screen) app gets the whole screen. Until that is answered the document background is black
-  while the mirror runs, so the strip Safari paints outside the viewport is dark rather than a
-  bright bar beside the picture. From phase 3 that strip will be halo white, which is what the
-  design wants there anyway.
-- Do **not** make the stage `position: fixed` with an opaque background: Safari 26 fails to paint
-  fully opaque fixed layers across the screen.
+- The debug overlay shows each test phone's maximum resolution and zoom capability, and whether the upgrade held at ≥ `RES_FPS_FLOOR`.
 
 ### Phase 2 — Zoom and pan
 
@@ -402,18 +413,6 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - Pinching feels pinned under the fingers.
 - Smooth on a mid-range Android phone (frame time in the debug overlay).
 - Unit tests pass.
-
-**Device findings** (same iPhone, Safari tab)
-
-- Framing, no page scroll or page zoom, pinch pinned under the fingers and the one-finger handover
-  all confirmed. The centring fix is visible: the crop now comes from the middle of the frame.
-- The picture itself never shows an empty edge. The only strips left in landscape are Safari's own
-  letterbox outside the layout viewport, now black.
-- **4× is still usable**, which on this device is about 0.23 source pixels per device pixel. One
-  device is not the `ZOOM_MAX` decision, but it is the first real bound on it.
-- Phase 4 will need real HTTPS to test on a phone: iOS cannot be made to trust the self-signed
-  certificate `dev:https` generates, so a page served that way cannot be launched from the Home
-  Screen at all. This also blocks the open question about the landscape letterbox in a standalone app.
 
 ### Phase 3 — Halo and glass UI
 
@@ -432,7 +431,7 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 
 ### Phase 4 — PWA
 
-- [x] `static/manifest.webmanifest` (written in phase 0, so the shell has no 404s):
+- [x] `static/manifest.webmanifest`:
 
   ```json
   {
@@ -458,9 +457,13 @@ export const DOUBLE_TAP_SLOP_PX = 30;
   }
   ```
 
-- [x] Icons: a white ring on Lagoon, echoing the halo. No letters, no brand, nothing camera-like. Generated by `node scripts/make-icons.mjs` (zero dependencies), plus `favicon.svg`.
+- [x] Icons: a white ring on Lagoon, echoing the halo. No letters, no brand, nothing camera-like.
 - [ ] `src/service-worker.ts` using `$service-worker` (`build`, `files`, `version`): precache everything in a versioned cache, delete old caches on activate, cache-first for same-origin GET, navigation requests fall back to the cached `/`. Cache nothing else.
 - [ ] Install hint on the intro, iOS only, only when not running standalone. Dismissible for the current session (a component flag, not storage).
+
+**Prerequisite (measured in phase 1).** iOS cannot be made to trust the certificate `dev:https`
+generates, so a page served that way cannot be launched from the Home Screen at all. Phase 4 needs
+a real HTTPS deployment — a Netlify deploy preview, or a locally trusted certificate.
 
 **Acceptance — on real phones**
 
@@ -472,26 +475,69 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 
 Claude Code prepares; people run the tests.
 
-- [ ] `docs/testcard.svg`: printable card with text lines from 1 mm to 4 mm cap height and a 5 mm grid. It lives in `docs/`, not `static/`, so it is not part of the app.
-- [ ] `TESTING.md` with the protocol and an empty results table:
+- [ ] `docs/testcard.svg`, printable at 100 % scale. It lives in `docs/`, not `static/`, so it is not part of the app. Contents:
+  - **Resolution chart:** groups of three black bars separated by equal white gaps, at line widths 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75 and 1.0 mm, each group in a horizontal and a vertical version, labelled with its width.
+  - Text lines from 1 mm to 4 mm cap height.
+  - A 50 mm ruler, to confirm the print scale with a real ruler.
+- [ ] Debug-only switch `?debug=1&res=1080` that skips the resolution upgrade, so both modes can be compared on the same phone.
+- [ ] `TESTING.md` with the protocol and an empty results table. Every resolution-dependent row is filled in twice: at 1080p and at the upgraded mode.
 
-| Column                                | How                                                      |
-| ------------------------------------- | -------------------------------------------------------- |
-| Device, OS, browser, version          | —                                                        |
-| Tab or installed                      | —                                                        |
-| Stream size and fps                   | debug overlay                                            |
-| Sharp at 30 / 35 / 45 cm?             | test card on a stand; many front cameras are fixed-focus |
-| Smallest readable line at 1×, 3×, 4×  | test card at 35 cm                                       |
-| Source px per screen px at 4×         | debug overlay                                            |
-| Halo light in a dim bathroom at 35 cm | 1–5, with and without the room light                     |
-| Wake lock holds 10 min                | yes / no                                                 |
-| Battery drop and warmth after 10 min  | % and subjective                                         |
-| Pill smooth over live video           | yes / no                                                 |
-| iOS standalone permission re-prompt   | yes / no                                                 |
+| Column                                   | How                                                                                                                                       |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Device, OS, browser, version             | —                                                                                                                                         |
+| Tab or installed                         | —                                                                                                                                         |
+| Capabilities: max resolution, zoom range | debug overlay                                                                                                                             |
+| Mode in use, measured fps                | debug overlay, both modes                                                                                                                 |
+| Sharp at 30 / 35 / 45 cm?                | test card on a stand; many front cameras are fixed-focus                                                                                  |
+| **Finest resolvable bar group at 5×**    | test card at 35 cm, both modes. At 5× the eye is not the limit, so this measures what the camera actually resolves on the subject, in mm. |
+| Smallest readable text line at 1× and 3× | test card at 35 cm                                                                                                                        |
+| Source px per screen px at 4×            | debug overlay, both modes                                                                                                                 |
+| Halo light in a dim bathroom at 35 cm    | 1–5, with and without the room light                                                                                                      |
+| Wake lock holds 10 min                   | yes / no                                                                                                                                  |
+| Battery drop and warmth after 10 min     | % and subjective, at the upgraded mode (worst case)                                                                                       |
+| Pill smooth over live video              | yes / no                                                                                                                                  |
+| iOS standalone permission re-prompt      | yes / no                                                                                                                                  |
 
 Minimum device set: a recent iPhone, an older iPhone on iOS 16.4–17, a mid-range Samsung, a low-cost Android. Optional: Firefox on Android.
 
-**Outcome:** decide `ZOOM_MAX`, whether 1080p is enough or `ideal` should go higher, and whether screen light alone is adequate or the lit cradle is needed sooner.
+**Outcome:** decide
+
+- the resolution policy: keep the upgrade, change `RES_MAX_LONG_SIDE`, or drop it if heat or fps make it not worth it;
+- `ZOOM_MAX`;
+- whether phase 5b is worth doing: only if some target phones expose `zoom` **and** the bar-group result at 5× is still too coarse after the upgrade;
+- whether screen light alone is adequate or the lit cradle is needed sooner.
+
+### Phase 5b — Native zoom spike (r2, conditional)
+
+Run only if phase 5 says so. Where the camera exposes a `zoom` capability, `applyConstraints({ advanced: [{ zoom }] })` crops on the sensor at full resolution before the stream is scaled down, so zoomed detail is real rather than interpolated. It only helps where the sensor is larger than the stream.
+
+**Zoom split.** The total zoom the user sees, and the readout shows, is `Z = z_n · s`: native zoom times CSS zoom.
+
+**Constraint: the native crop is centred and cannot pan.** Front cameras practically never expose pan. So native zoom is only usable up to the point where the visible region still lies inside the centred crop. In normalised full-frame units, with the view centre offset `(du, dv)` from the frame centre and visible half-extents `(hx, hy)`:
+
+```
+z_n ≤ 0.5 / (|du| + hx)   and   z_n ≤ 0.5 / (|dv| + hy)
+z_n = min(caps.zoom.max, Z, both bounds), snapped down to caps.zoom.step
+s   = Z / z_n
+```
+
+With the view centred, `z_n` can go up to `Z` or the capability maximum, whichever is smaller. When the user pans towards an edge, `z_n` backs off automatically and CSS zoom takes over the rest.
+
+**Timing.** During a gesture only CSS zoom changes. `NATIVE_ZOOM_SETTLE_MS` after the gesture ends, apply the new `z_n`, and at the same time set `s = Z / z_n` and re-derive `t` so the view stays put.
+
+**Coordinates.** With native zoom active, the delivered frame is a crop, so anchors (phase 6) must be stored in full-sensor normalised coordinates: `u_full = 0.5 + (u_frame − 0.5) / z_n`, and likewise for `v`. Keep this mapping in a single function in `viewport.ts`. Phase 7 must also reset its reference frame whenever `z_n` changes.
+
+- [ ] Split logic and bounds in `viewport.ts`, with unit tests.
+- [ ] Settling logic and the debug display of `z_n` and `s`.
+- [ ] Re-run the bar-group test at 3×, 4× and 5× with native zoom on and off.
+
+**The risk to measure first:** native zoom takes effect a few frames after `applyConstraints` resolves, and no frame says which zoom it was captured at, so the picture may visibly jump or refocus. If that jump can't be made unnoticeable, the spike fails and the feature is not built.
+
+**Pass criteria**
+
+- On phones that expose `zoom`, the finest resolvable bar group at 4× improves by at least one step over CSS-only.
+- No noticeable jump when native zoom settles.
+- Panning to the edge of the frame still works, with `z_n` backing off smoothly.
 
 ---
 
@@ -572,14 +618,14 @@ Stabilisation runs only while an anchor is locked. The anchor is always the user
 - Nudging the stand by up to about 3 cm, or tilting it by up to about 5°, brings the anchor back within 10 screen px of the centre in under 300 ms.
 - A hand moving through the middle of the picture does not drag the view.
 - No drift beyond 5 screen px over 2 minutes with a still scene.
-- Worker time ≤ 4 ms per analysed frame on a mid-range Android phone. Record battery and warmth impact in `TESTING.md`.
+- Worker time ≤ 4 ms per analysed frame on a mid-range Android phone, measured at the stream resolution actually in use after the phase 1 upgrade (a larger stream makes sampling more expensive). Record battery and warmth impact in `TESTING.md`.
 - `check:privacy` passes: `getImageData` appears only under `src/lib/motion/`.
 
 ---
 
 ## 5. Backlog (not now)
 
-- **Native camera zoom** via the `zoom` track constraint where the camera exposes it (mostly Chrome on Android). It crops at sensor resolution, so it is sharper than CSS zoom. Worth a spike only if phase 5 shows zoom quality is the bottleneck.
+- **WebGL upscaling** (r2): draw the video into a WebGL canvas with bicubic or Lanczos scaling and mild sharpening instead of CSS scaling. It gives sharper edges but no new detail, and it changes the rendering architecture (canvas instead of `<video>`). It must stay GPU-only: no `readPixels`, no readback of any kind. Consider only if phase 5 shows most target phones are stuck at 1080p and the picture feels soft at 2–3×.
 - **Exposure point or compensation** via track constraints (Chrome on Android only).
 - **Lit phone cradle:** hardware, not app work.
 - **Remembering settings** (halo level, language): not allowed under hard rule 2. Revisit only if that rule changes.
@@ -588,4 +634,4 @@ Stabilisation runs only while an anchor is locked. The anchor is always the user
 
 - Final name, branding, and whether any company name appears. This waits for the regulatory decision.
 - Hungarian form of address: the plan uses the formal register (magázás).
-- `ZOOM_MAX`: 5× for now, to be revisited after phase 5.
+- `ZOOM_MAX`: 5× for now. At 1080p, zoom above ~2–2.5× enlarges rather than sharpens for a normally sighted viewer; it stays because enlargement helps reduced vision. Revisit after phase 5.

@@ -111,9 +111,11 @@
 		{t}
 		{debug}
 		stream={camera.stream}
+		upgradeState={camera.upgradeState}
 		wakeLockStatus={wakeLock.status}
 		onexit={exit}
 		onplayfail={onPlayFail}
+		onvideoready={(video) => void camera.improveResolution(video)}
 	/>
 {:else}
 	<Intro {t} busy={screen === 'starting'} onstart={start} />
