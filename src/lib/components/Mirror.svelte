@@ -41,6 +41,16 @@
 		streamH = video?.videoHeight ?? 0;
 	}
 
+	// Phase 3 turns this into the halo, which is pure white.
+	$effect(() => {
+		const root = document.documentElement;
+		const previous = root.style.backgroundColor;
+		root.style.backgroundColor = '#000';
+		return () => {
+			root.style.backgroundColor = previous;
+		};
+	});
+
 	$effect(() => {
 		const element = video;
 		const current = stream;
@@ -65,7 +75,7 @@
 </script>
 
 <div
-	class="relative h-dvh w-full touch-none overflow-hidden bg-black"
+	class="relative h-dvh w-screen touch-none overflow-hidden bg-black"
 	bind:clientWidth={stageW}
 	bind:clientHeight={stageH}
 >
@@ -99,7 +109,7 @@
 	</div>
 
 	{#if debug}
-		<DebugOverlay {stream} streamSize={source} {cover} {zoom} {wakeLockStatus} />
+		<DebugOverlay {stream} streamSize={source} stageSize={stage} {cover} {zoom} {wakeLockStatus} />
 	{/if}
 </div>
 

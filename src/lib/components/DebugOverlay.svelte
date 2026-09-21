@@ -1,22 +1,39 @@
 <script lang="ts">
+	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
 	import { sourcePixelsPerScreenPixel, type Size } from '$lib/viewport';
 	import type { WakeLockStatus } from '$lib/wakelock.svelte';
 
 	let {
 		stream,
 		streamSize,
+		stageSize,
 		cover,
 		zoom,
 		wakeLockStatus
 	}: {
 		stream: MediaStream | null;
 		streamSize: Size;
+		stageSize: Size;
 		cover: number;
 		zoom: number;
 		wakeLockStatus: WakeLockStatus;
 	} = $props();
 
 	const dpr = window.devicePixelRatio || 1;
+
+	// Whether the stage really reaches the edge of the screen, and by how much
+	// the notch and the home indicator eat into it.
+	let probe = $state<HTMLElement | null>(null);
+	let safeArea = $state('—');
+	$effect(() => {
+		const w = innerWidth.current;
+		const h = innerHeight.current;
+		if (!probe || w === undefined || h === undefined) return;
+		const style = getComputedStyle(probe);
+		safeArea = [style.paddingTop, style.paddingRight, style.paddingBottom, style.paddingLeft]
+			.map((value) => Math.round(parseFloat(value)))
+			.join('/');
+	});
 
 	const settings: MediaTrackSettings = $derived(stream?.getVideoTracks()[0]?.getSettings() ?? {});
 	const quality = $derived(sourcePixelsPerScreenPixel(cover, zoom, dpr));
@@ -39,6 +56,9 @@
 	});
 
 	const rows: [string, string][] = $derived([
+		['viewport', `${innerWidth.current ?? 0}×${innerHeight.current ?? 0}`],
+		['stage', `${Math.round(stageSize.w)}×${Math.round(stageSize.h)}`],
+		['safe t/r/b/l', safeArea],
 		['stream', `${streamSize.w}×${streamSize.h}`],
 		[
 			'track',
@@ -61,4 +81,17 @@
 	{#each rows as [label, value] (label)}
 		<div><span class="opacity-60">{label}</span> {value}</div>
 	{/each}
+	<span bind:this={probe} class="safe-probe"></span>
 </div>
+
+<style>
+	/* Only here to be measured: env() is not readable from script directly. */
+	.safe-probe {
+		position: absolute;
+		visibility: hidden;
+		padding-top: env(safe-area-inset-top);
+		padding-right: env(safe-area-inset-right);
+		padding-bottom: env(safe-area-inset-bottom);
+		padding-left: env(safe-area-inset-left);
+	}
+</style>
