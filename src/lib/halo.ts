@@ -11,6 +11,17 @@ export function haloWidth(level: HaloLevel, viewport: Size): number {
 	return HALO_LEVELS[level] * short;
 }
 
+/**
+ * The widest the halo can ever get. Overlays are placed against this rather
+ * than the current width, so they hold still while the halo opens and when
+ * the level changes — and never end up sitting on the halo, which is the
+ * light source and carries nothing.
+ */
+export function maxHaloWidth(viewport: Size): number {
+	const widest = Math.max(...Object.values(HALO_LEVELS));
+	return Math.max(0, Math.min(viewport.w, viewport.h)) * widest;
+}
+
 export function nextHaloLevel(level: HaloLevel): HaloLevel {
 	const at = HALO_ORDER.indexOf(level);
 	return HALO_ORDER[(at + 1) % HALO_ORDER.length];

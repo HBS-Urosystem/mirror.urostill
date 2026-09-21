@@ -89,6 +89,21 @@ test('the zoom readout shows the zoom and resets it', async ({ page }) => {
 	expect((await view(page)).scale).toBeCloseTo(1, 6);
 });
 
+test('the pill holds its place as the light level changes', async ({ page }) => {
+	await startMirror(page);
+	await showControls(page);
+
+	const box = async () => (await page.locator('.glass-smoke').boundingBox())!;
+	const before = await box();
+
+	for (let press = 0; press < 3; press++) {
+		await page.getByRole('button', { name: /^Light: / }).click();
+		await haloSettled(page);
+		await showControls(page);
+		expect(await box()).toEqual(before);
+	}
+});
+
 test('hiding and showing the pill shifts nothing', async ({ page }) => {
 	await startMirror(page);
 	await showControls(page);

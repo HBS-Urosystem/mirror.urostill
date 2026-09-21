@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { HALO_LEVELS } from '../../src/lib/config';
-import { easeOutCubic, haloWidth, nextHaloLevel, stageSize, sunRays } from '../../src/lib/halo';
+import {
+	easeOutCubic,
+	haloWidth,
+	maxHaloWidth,
+	nextHaloLevel,
+	stageSize,
+	sunRays
+} from '../../src/lib/halo';
 
 describe('haloWidth', () => {
 	it('measures against the short side, whichever way the phone is held', () => {
@@ -21,6 +28,20 @@ describe('haloWidth', () => {
 
 	it('survives a viewport that has not been measured yet', () => {
 		expect(haloWidth('bright', { w: 0, h: 0 })).toBe(0);
+	});
+});
+
+describe('maxHaloWidth', () => {
+	it('is the widest level, whatever the current one is', () => {
+		const viewport = { w: 393, h: 852 };
+		expect(maxHaloWidth(viewport)).toBeCloseTo(haloWidth('bright', viewport), 6);
+	});
+
+	it('is at least as wide as every level, so nothing placed against it moves', () => {
+		const viewport = { w: 393, h: 852 };
+		for (const level of ['off', 'soft', 'bright'] as const) {
+			expect(maxHaloWidth(viewport)).toBeGreaterThanOrEqual(haloWidth(level, viewport));
+		}
 	});
 });
 
