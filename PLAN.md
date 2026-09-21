@@ -399,6 +399,35 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - Every error state can be reached and reads clearly.
 - The debug overlay shows each test phone's maximum resolution and zoom capability, and whether the upgrade held at ≥ `RES_FPS_FLOOR`.
 
+**Device findings — iPhone 14 Pro, 393×852, iOS 26, Safari tab, dev server**
+
+_At 1080p (r1):_
+
+- Live mirrored picture, wake lock, app switching and every error state behave. Frame time 16.x ms.
+- **Source pixels per device pixel 0.92 at 1×**, so 0.23 at 4× and 0.18 at 5×: CSS zoom was already
+  interpolating at 1×. This measurement is what prompted r2.
+- **In a Safari tab in landscape the layout viewport is the safe area, not the screen**: 734×333 out
+  of 852×393, with `safe-area-inset-left/right` both reporting 0, in spite of `viewport-fit=cover`.
+  The stage measures exactly the same 734×333, so the app fills everything it is given — nothing
+  inside the page can paint into the missing 2×59pt. Still open: whether an installed (home-screen)
+  app gets the whole screen. Until that is answered the document background is black while the
+  mirror runs, so the strip Safari paints outside the viewport is dark rather than a bright bar
+  beside the picture. From phase 3 that strip will be halo white, which is what the design wants
+  there anyway.
+- Do **not** make the stage `position: fixed` with an opaque background: Safari 26 fails to paint
+  fully opaque fixed layers across the screen.
+
+_After the r2 upgrade:_
+
+- `camera max` **4032×3024 @ 60** — the front sensor is 12 MP, and 1080p really was our own `ideal`.
+- The upgrade **held**: `upgraded` at **30 fps**, and **no flicker** during `applyConstraints`.
+  Ten minutes at the upgraded mode caused no noticeable heat or battery problem.
+- **Source pixels per device pixel 1.94 at 1× and 0.65 at 3×**, against 0.92 and 0.31 at 1080p —
+  **2.1× more detail**. At 5× it is now 0.39, where it used to be 0.18. This weakens the case for
+  lowering `ZOOM_MAX`; the decision still belongs to phase 5.
+- **`native zoom` reports 1–10** on this phone. Safari exposes the `zoom` capability, so phase 5b
+  has a candidate device. Step size was not readable.
+
 ### Phase 2 — Zoom and pan
 
 - [x] `viewport.ts` with unit tests: clamp, pan, pinch about a midpoint, reset, re-derivation after resize and rotation, zoom limits.
@@ -413,6 +442,16 @@ export const DOUBLE_TAP_SLOP_PX = 30;
 - Pinching feels pinned under the fingers.
 - Smooth on a mid-range Android phone (frame time in the debug overlay).
 - Unit tests pass.
+
+**Device findings** (same iPhone, Safari tab)
+
+- Framing, no page scroll or page zoom, pinch pinned under the fingers and the one-finger handover
+  all confirmed. The centring fix is visible: the crop now comes from the middle of the frame.
+- The picture itself never shows an empty edge. The only strips left in landscape are Safari's own
+  letterbox outside the layout viewport, now black.
+- **4× was already usable at 1080p**, at about 0.23 source pixels per device pixel. After the r2
+  upgrade the same zoom has 0.65. One device is not the `ZOOM_MAX` decision, but it is the first
+  real bound on it.
 
 ### Phase 3 — Halo and glass UI
 
@@ -497,6 +536,11 @@ Claude Code prepares; people run the tests.
 | Battery drop and warmth after 10 min     | % and subjective, at the upgraded mode (worst case)                                                                                       |
 | Pill smooth over live video              | yes / no                                                                                                                                  |
 | iOS standalone permission re-prompt      | yes / no                                                                                                                                  |
+
+**Android is deferred and needs a test plan of its own** (requested 2026-09-22, not yet written).
+Chrome exposes capabilities Safari does not — the `zoom` track constraint, exposure control, a
+different `applyConstraints` cost — and the low-cost devices are where the fps guard and the heat
+budget will actually bite. Do not fold it into the iOS protocol.
 
 Minimum device set: a recent iPhone, an older iPhone on iOS 16.4–17, a mid-range Samsung, a low-cost Android. Optional: Firefox on Android.
 
