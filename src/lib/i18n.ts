@@ -67,6 +67,11 @@ export function pickLang(language: string | null | undefined): Lang {
 	return language?.toLowerCase().split('-')[0] === 'hu' ? 'hu' : 'en';
 }
 
+/** 1 → "1", 2.54 → "2.5". Shown with tabular figures, so the width is steady. */
+export function formatZoom(zoom: number): string {
+	return String(Math.round(zoom * 10) / 10);
+}
+
 /** Fills `{name}` placeholders. Unknown names are left alone. */
 export function fill(template: string, values: Record<string, string | number>): string {
 	return template.replace(/\{(\w+)\}/g, (whole, name: string) =>

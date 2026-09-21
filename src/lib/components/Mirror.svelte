@@ -1,8 +1,19 @@
 <script lang="ts">
+	import ControlPill from './ControlPill.svelte';
 	import DebugOverlay from './DebugOverlay.svelte';
 	import type { UpgradeState } from '$lib/camera.svelte';
-	import { ZOOM_MAX, ZOOM_MIN, ZOOM_START } from '$lib/config';
+	import {
+		HALO_DEFAULT,
+		HALO_OPEN_MS,
+		PILL_AUTOHIDE_MS,
+		PILL_FADE_MS,
+		ZOOM_MAX,
+		ZOOM_MIN,
+		ZOOM_START,
+		type HaloLevel
+	} from '$lib/config';
 	import { attachGestures, type GestureHandlers } from '$lib/gestures.svelte';
+	import { easeOutCubic, haloWidth, nextHaloLevel, stageSize } from '$lib/halo';
 	import type { Strings } from '$lib/i18n';
 	import {
 		centreContentPoint,
@@ -16,6 +27,8 @@
 		type View
 	} from '$lib/viewport';
 	import type { WakeLockStatus } from '$lib/wakelock.svelte';
+	import { MediaQuery } from 'svelte/reactivity';
+	import { fade } from 'svelte/transition';
 
 	let {
 		t,
@@ -38,12 +51,18 @@
 		onvideoready: (video: HTMLVideoElement) => void;
 	} = $props();
 
+	const reducedMotion = new MediaQuery('(prefers-reduced-motion: reduce)');
+
 	let stageElement = $state<HTMLElement | null>(null);
 	let video = $state<HTMLVideoElement | null>(null);
-	let stageW = $state(0);
-	let stageH = $state(0);
+	let rootW = $state(0);
+	let rootH = $state(0);
 	let streamW = $state(0);
 	let streamH = $state(0);
+
+	let level = $state<HaloLevel>(HALO_DEFAULT);
+	/** 0 at the edge of the screen, 1 at full width. The one choreographed motion. */
+	let openProgress = $state(0);
 
 	let zoom = $state(ZOOM_START);
 	/**
@@ -52,12 +71,18 @@
 	 * move what the user put in the middle.
 	 */
 	let centre = $state<Vec>({ x: 0.5, y: 0.5 });
-	/** Phase 3 replaces this with the auto-hiding control pill. */
 	let controlsVisible = $state(true);
 
 	const limits = { min: ZOOM_MIN, max: ZOOM_MAX };
 
-	const stage = $derived({ w: stageW, h: stageH });
+	const viewport = $derived({ w: rootW, h: rootH });
+	const halo = $derived(haloWidth(level, viewport) * openProgress);
+	/**
+	 * Computed rather than measured. A ResizeObserver reports the stage a frame
+	 * late, which during the halo opening would leave the picture briefly too
+	 * small for it — the one thing that must never happen.
+	 */
+	const stage = $derived(stageSize(viewport, halo));
 	const source = $derived({ w: streamW, h: streamH });
 	const picture = $derived(pictureSize(stage, source));
 	const cover = $derived(coverScale(stage, source));
@@ -71,8 +96,25 @@
 		centre = toNormalised(centreContentPoint(next), picture);
 	}
 
+	let hideTimer: ReturnType<typeof setTimeout> | undefined;
+	function keepControlsVisible() {
+		controlsVisible = true;
+		clearTimeout(hideTimer);
+		hideTimer = setTimeout(() => (controlsVisible = false), PILL_AUTOHIDE_MS);
+	}
+	function toggleControls() {
+		if (!controlsVisible) return keepControlsVisible();
+		clearTimeout(hideTimer);
+		controlsVisible = false;
+	}
+	/** A gesture keeps the controls up, but never summons them. */
+	function noteInteraction() {
+		if (controlsVisible) keepControlsVisible();
+	}
+
 	const handlers: GestureHandlers = {
 		onpanstart() {
+			noteInteraction();
 			gestureStart = { s: zoom, t: translation };
 		},
 		onpanmove(total) {
@@ -82,6 +124,7 @@
 			gestureStart = null;
 		},
 		onpinchstart() {
+			noteInteraction();
 			gestureStart = { s: zoom, t: translation };
 		},
 		onpinchmove(midpoint, ratio) {
@@ -90,12 +133,10 @@
 		onpinchend() {
 			gestureStart = null;
 		},
-		ontap() {
-			controlsVisible = !controlsVisible;
-		},
+		ontap: toggleControls,
 		ondoubletap() {
 			zoom = ZOOM_START;
-			controlsVisible = true;
+			keepControlsVisible();
 		}
 	};
 
@@ -105,21 +146,47 @@
 		return attachGestures(element, handlers);
 	});
 
+	$effect(() => {
+		keepControlsVisible();
+		return () => clearTimeout(hideTimer);
+	});
+
+	// The halo opens from the screen edge to its width, once, on start.
+	$effect(() => {
+		if (reducedMotion.current) {
+			openProgress = 1;
+			return;
+		}
+		let handle = 0;
+		const started = performance.now();
+		const step = () => {
+			const t = (performance.now() - started) / HALO_OPEN_MS;
+			openProgress = easeOutCubic(t);
+			if (t < 1) handle = requestAnimationFrame(step);
+		};
+		handle = requestAnimationFrame(step);
+		return () => cancelAnimationFrame(handle);
+	});
+
+	/**
+	 * With the light off the page is black, so the strip a browser paints
+	 * outside the layout viewport does not glow. With the light on it is part
+	 * of the halo and must be the same pure white.
+	 */
+	$effect(() => {
+		const root = document.documentElement;
+		const previous = root.style.backgroundColor;
+		root.style.backgroundColor = level === 'off' ? '#000' : '#fff';
+		return () => {
+			root.style.backgroundColor = previous;
+		};
+	});
+
 	/** The stream swaps its width and height when the phone rotates. */
 	function readIntrinsicSize() {
 		streamW = video?.videoWidth ?? 0;
 		streamH = video?.videoHeight ?? 0;
 	}
-
-	// Phase 3 turns this into the halo, which is pure white.
-	$effect(() => {
-		const root = document.documentElement;
-		const previous = root.style.backgroundColor;
-		root.style.backgroundColor = '#000';
-		return () => {
-			root.style.backgroundColor = previous;
-		};
-	});
 
 	$effect(() => {
 		const element = video;
@@ -150,17 +217,22 @@
 	});
 </script>
 
-<div class="relative h-dvh w-screen overflow-hidden bg-black">
+<!-- The halo is the page background. Nothing is ever drawn on it. -->
+<div
+	class="relative h-dvh w-screen overflow-hidden"
+	class:lit={level !== 'off'}
+	bind:clientWidth={rootW}
+	bind:clientHeight={rootH}
+>
 	<!--
 		Only this layer takes gestures. The controls are siblings, not children,
 		so a tap on a button cannot also read as a tap on the picture — which
 		would hide the button before its own click landed.
 	-->
 	<div
-		class="absolute inset-0 touch-none select-none"
+		class="absolute touch-none overflow-hidden bg-black select-none"
+		style:inset="{halo}px"
 		bind:this={stageElement}
-		bind:clientWidth={stageW}
-		bind:clientHeight={stageH}
 	>
 		<div
 			class="picture absolute top-1/2 left-1/2 will-change-transform"
@@ -181,18 +253,28 @@
 		</div>
 	</div>
 
-	<!-- Phase 3 replaces this with the control pill. -->
 	{#if controlsVisible}
 		<div
-			class="pointer-events-none absolute inset-x-0 bottom-0 flex justify-center pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+			class="pointer-events-none absolute inset-x-0 flex justify-center"
+			style:bottom="calc(max({halo}px, env(safe-area-inset-bottom)) + 0.75rem)"
+			transition:fade={{ duration: reducedMotion.current ? 0 : PILL_FADE_MS }}
 		>
-			<button
-				class="pointer-events-auto min-h-12 rounded-full glass-smoke px-6 text-chip font-medium"
-				type="button"
-				onclick={onexit}
-			>
-				{t.exit}
-			</button>
+			<div class="pointer-events-auto">
+				<ControlPill
+					{t}
+					{level}
+					{zoom}
+					onlight={() => {
+						level = nextHaloLevel(level);
+						keepControlsVisible();
+					}}
+					onzoomreset={() => {
+						zoom = ZOOM_START;
+						keepControlsVisible();
+					}}
+					{onexit}
+				/>
+			</div>
 		</div>
 	{/if}
 
@@ -206,11 +288,17 @@
 			{zoom}
 			{upgradeState}
 			{wakeLockStatus}
+			offset={halo}
 		/>
 	{/if}
 </div>
 
 <style>
+	/* Pure white, always. The halo is the light, not a decoration. */
+	.lit {
+		background-color: #ffffff;
+	}
+
 	/*
 		Centred with left/top 50% and a -50% shift rather than `inset: 0; margin:
 		auto`: auto margins are not allowed to go negative, so as soon as the

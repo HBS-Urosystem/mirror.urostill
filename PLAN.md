@@ -426,7 +426,8 @@ _After the r2 upgrade:_
   **2.1× more detail**. At 5× it is now 0.39, where it used to be 0.18. This weakens the case for
   lowering `ZOOM_MAX`; the decision still belongs to phase 5.
 - **`native zoom` reports 1–10** on this phone. Safari exposes the `zoom` capability, so phase 5b
-  has a candidate device. Step size was not readable.
+  has a candidate device. `getCapabilities()` returns `min` and `max` but **no `step` field at
+  all**, so phase 5b has to choose its own increment rather than read one off the camera.
 
 ### Phase 2 — Zoom and pan
 
@@ -455,11 +456,11 @@ _After the r2 upgrade:_
 
 ### Phase 3 — Halo and glass UI
 
-- [ ] Halo levels off / soft / bright from `config.ts`, default bright. The halo is the page background (`#FFF`), and the stage is inset by the halo width on all sides. Safe-area regions are white too.
-- [ ] Halo opening motion on start (section 1, principle 5), instant with reduced motion.
-- [ ] `ControlPill`: Light (cycles off → soft → bright), zoom readout (tap resets to 1×), Exit. Bottom-centre of the stage, above `env(safe-area-inset-bottom)`. Hides after 3 s without interaction; a tap on the stage shows or hides it. 150 ms fade, none with reduced motion.
-- [ ] `glass-smoke` utility with its fallback; check the `-webkit-` prefix in the built CSS.
-- [ ] Accessibility: `aria-label` on each pill button that includes the current state, visible focus rings, 48 px minimum targets.
+- [x] Halo levels off / soft / bright from `config.ts`, default bright. The halo is the page background (`#FFF`), and the stage is inset by the halo width on all sides. Safe-area regions are white too.
+- [x] Halo opening motion on start (section 1, principle 5), instant with reduced motion.
+- [x] `ControlPill`: Light (cycles off → soft → bright), zoom readout (tap resets to 1×), Exit. Bottom-centre of the stage, above `env(safe-area-inset-bottom)`. Hides after 3 s without interaction; a tap on the stage shows or hides it. 150 ms fade, none with reduced motion.
+- [x] `glass-smoke` utility with its fallback; check the `-webkit-` prefix in the built CSS.
+- [x] Accessibility: `aria-label` on each pill button that includes the current state, visible focus rings, 48 px minimum targets.
 
 **Acceptance**
 

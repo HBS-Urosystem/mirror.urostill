@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { haloSettled, showControls } from './helpers';
 
 // A phone-shaped window, so the picture really does overflow the stage and the
 // cover check below has something to catch.
@@ -15,6 +16,7 @@ test('start plays a mirrored picture that covers the stage, exit returns to the 
 	await expect
 		.poll(() => video.evaluate((element: HTMLVideoElement) => element.readyState))
 		.toBeGreaterThanOrEqual(2);
+	await haloSettled(page);
 
 	// The picture is mirrored, and it is the element that carries the flip.
 	await expect(video).toHaveCSS('transform', 'matrix(-1, 0, 0, 1, 0, 0)');
@@ -28,6 +30,7 @@ test('start plays a mirrored picture that covers the stage, exit returns to the 
 	expect(fit.pw).toBeGreaterThanOrEqual(fit.sw - 0.5);
 	expect(fit.ph).toBeGreaterThanOrEqual(fit.sh - 0.5);
 
+	await showControls(page);
 	await page.getByRole('button', { name: 'Exit' }).click();
 	await expect(page.getByRole('button', { name: 'Start mirror' })).toBeVisible();
 	await expect(video).toHaveCount(0);

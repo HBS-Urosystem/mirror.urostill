@@ -1,72 +1,9 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import { pointers, showControls, startMirror, view } from './helpers';
 
-interface Finger {
-	id: number;
-	x: number;
-	y: number;
-}
-
-/**
- * The app listens to Pointer Events, so synthetic ones exercise the real
- * recogniser — including the two-finger paths Playwright cannot produce.
- */
 // A 16:9 stream in a 16:9 window fits exactly, leaving nothing to pan at 1x.
 // A phone-shaped window is both more representative and actually pannable.
 test.use({ viewport: { width: 390, height: 844 } });
-
-async function pointers(page: Page, type: string, fingers: Finger[]) {
-	await page.evaluate(
-		({ type, fingers }) => {
-			const stage = document.querySelector('.picture')!.parentElement!;
-			for (const finger of fingers) {
-				stage.dispatchEvent(
-					new PointerEvent(type, {
-						pointerId: finger.id,
-						clientX: finger.x,
-						clientY: finger.y,
-						bubbles: true,
-						cancelable: true,
-						pointerType: 'touch',
-						isPrimary: finger.id === 1
-					})
-				);
-			}
-		},
-		{ type, fingers }
-	);
-}
-
-/** Scale and translation off the live transform, plus the no-empty-edge check. */
-async function view(page: Page) {
-	return page.evaluate(() => {
-		const picture = document.querySelector('.picture') as HTMLElement;
-		const stage = picture.parentElement as HTMLElement;
-		const matrix = new DOMMatrix(getComputedStyle(picture).transform);
-		const p = picture.getBoundingClientRect();
-		const s = stage.getBoundingClientRect();
-		return {
-			scale: matrix.a,
-			x: matrix.m41,
-			y: matrix.m42,
-			covers:
-				p.left <= s.left + 0.5 &&
-				p.right >= s.right - 0.5 &&
-				p.top <= s.top + 0.5 &&
-				p.bottom >= s.bottom - 0.5,
-			centre: { x: s.left + s.width / 2, y: s.top + s.height / 2 },
-			scrolled: window.scrollX !== 0 || window.scrollY !== 0
-		};
-	});
-}
-
-async function startMirror(page: Page) {
-	await page.goto('/');
-	await page.getByRole('button', { name: 'Start mirror' }).click();
-	await expect
-		.poll(() => page.locator('video').evaluate((v: HTMLVideoElement) => v.readyState))
-		.toBeGreaterThanOrEqual(2);
-	return view(page);
-}
 
 test('one finger pans the picture without revealing an edge or scrolling the page', async ({
 	page
@@ -153,7 +90,8 @@ test('a single tap hides the controls and shows them again', async ({ page }) =>
 	const { x: cx, y: cy } = before.centre;
 	const exit = page.getByRole('button', { name: 'Exit' });
 
-	await expect(exit).toBeVisible();
+	// Start from a known state: the pill hides itself after three seconds.
+	await showControls(page);
 	await pointers(page, 'pointerdown', [{ id: 1, x: cx, y: cy }]);
 	await pointers(page, 'pointerup', [{ id: 1, x: cx, y: cy }]);
 	await expect(exit).toHaveCount(0);
