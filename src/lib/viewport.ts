@@ -128,3 +128,16 @@ export function translationForCentre(u: Vec, s: number, picture: Size, stage: Si
 	const c = fromNormalised(u, picture);
 	return clampTranslation({ x: -s * c.x, y: -s * c.y }, s, picture, stage);
 }
+
+/**
+ * Where the stored anchor actually lands on screen, relative to the stage
+ * centre. It is the centre in every ordinary case; it differs only where
+ * clamping bites, which a user gesture cannot cause — panning is clamped as it
+ * goes — but a geometry change can, and phase 7's tracking will. Drawing the
+ * crosshair here rather than at a hardcoded centre keeps it honest for free.
+ */
+export function anchorPosition(u: Vec, s: number, picture: Size, stage: Size): Vec {
+	const c = fromNormalised(u, picture);
+	const t = translationForCentre(u, s, picture, stage);
+	return { x: s * c.x + t.x, y: s * c.y + t.y };
+}

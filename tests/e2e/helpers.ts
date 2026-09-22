@@ -95,3 +95,22 @@ export async function showControls(page: Page) {
 	await tap(page, centre.x, centre.y, 91);
 	await expect(exit).toBeVisible();
 }
+
+/**
+ * The content point held at the stage centre, in normalised picture
+ * coordinates — the anchor, read back out of the DOM.
+ */
+export async function anchor(page: Page) {
+	return page.evaluate(() => {
+		const picture = document.querySelector('.picture') as HTMLElement;
+		const matrix = new DOMMatrix(getComputedStyle(picture).transform);
+		const w = parseFloat(picture.style.width);
+		const h = parseFloat(picture.style.height);
+		const s = matrix.a;
+		// The transform opens with translate(-50%, -50%), so the element's own
+		// size is folded into the matrix; take it back out to get the translation.
+		const tx = matrix.m41 + w / 2;
+		const ty = matrix.m42 + h / 2;
+		return { u: -tx / s / w + 0.5, v: -ty / s / h + 0.5, picture: { w, h }, scale: s };
+	});
+}

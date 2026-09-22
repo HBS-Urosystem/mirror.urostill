@@ -642,6 +642,18 @@ The anchor is not a mode the user switches on. It is simply **the content point 
 
 **Already delivered by phase 4b:** the crosshair that shows where it is.
 
+**Delivered.** Most of the behaviour was already in place: phase 2 stored the view as a zoom and a
+normalised picture coordinate rather than a pixel translation, so the translation has always been
+derived from the anchor, and a resize, a rotation or a new stream size has always brought the same
+content back to the middle. What phase 6 added is `anchorPosition()` — `p_A` — and drawing the
+crosshair there instead of at a hardcoded centre, so it stays honest when clamping pushes the
+anchor off the middle, plus the anchor's `u, v` in the debug overlay for phase 7.
+
+One limit worth stating: normalised coordinates are relative to the delivered frame, so they hold
+exactly through a resolution change but only approximately through a change of **aspect ratio** —
+a 16:9 stream replaced by a 4:3 one sees a different field, and the same `(u, v)` is then a
+slightly different point in the scene. Nothing simpler is available without a sensor mapping.
+
 **Behaviour**
 
 - After every pan and every zoom, once the interaction ends, derive the anchor from the current view: `c₀ = −t / s`.

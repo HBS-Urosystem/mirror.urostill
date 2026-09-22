@@ -19,6 +19,7 @@
 	import { easeOutCubic, haloWidth, nextHaloStep, stageSize } from '$lib/halo';
 	import type { Strings } from '$lib/i18n';
 	import {
+		anchorPosition,
 		centreContentPoint,
 		coverScale,
 		pan,
@@ -95,6 +96,13 @@
 	const picture = $derived(pictureSize(stage, source));
 	const cover = $derived(coverScale(stage, source));
 	const translation = $derived(translationForCentre(centre, zoom, picture, stage));
+	/**
+	 * `centre` is the anchor: the content point held in the middle, re-derived
+	 * from the view after every interaction and stored normalised, so a resize,
+	 * a rotation or a new stream size cannot move it. This is where it actually
+	 * lands — the stage centre unless clamping has pushed it off.
+	 */
+	const anchor = $derived(anchorPosition(centre, zoom, picture, stage));
 
 	/** The view when the gesture began. Every step works from it, never from the last frame. */
 	let gestureStart: View | null = null;
@@ -314,7 +322,8 @@
 
 	{#if crosshairVisible}
 		<div
-			class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+			class="pointer-events-none absolute top-1/2 left-1/2"
+			style:transform="translate(-50%, -50%) translate3d({anchor.x}px, {anchor.y}px, 0)"
 			transition:fade={{ duration: reducedMotion.current ? 0 : CROSSHAIR_FADE_MS }}
 		>
 			<Crosshair />
@@ -356,6 +365,7 @@
 			{zoom}
 			{upgradeState}
 			{wakeLockStatus}
+			{centre}
 		/>
 	{/if}
 </div>

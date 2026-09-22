@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	anchorPosition,
 	centreContentPoint,
 	clampTranslation,
 	clampZoom,
@@ -190,5 +191,80 @@ describe('translationForCentre', () => {
 		const reset = translationForCentre(zoomedEdge, 1, picture, stage);
 		expect(covers({ s: 1, t: reset })).toBe(true);
 		expect(reset.y).toBeCloseTo(0, 6);
+	});
+});
+
+describe('the centre anchor', () => {
+	/** Deriving the anchor from a view is what happens after every interaction. */
+	const derive = (view: View, p: Size = picture) => toNormalised(centreContentPoint(view), p);
+
+	it('is whatever the user left in the middle', () => {
+		const view: View = { s: 2, t: clampTranslation({ x: -300, y: 120 }, 2, picture, stage) };
+		const u = derive(view);
+		const restored = translationForCentre(u, view.s, picture, stage);
+		expect(restored.x).toBeCloseTo(view.t.x, 9);
+		expect(restored.y).toBeCloseTo(view.t.y, 9);
+	});
+
+	it('comes back to the middle after a resize', () => {
+		const chosen = derive({ s: 2, t: { x: -200, y: 40 } });
+		const wider: Size = { w: 600, h: 700 };
+		const rePictured = pictureSize(wider, stream);
+		const t = translationForCentre(chosen, 2, rePictured, wider);
+		expect(toNormalised(centreContentPoint({ s: 2, t }), rePictured).x).toBeCloseTo(chosen.x, 9);
+	});
+
+	it('comes back to the middle after the stream resolution changes', () => {
+		// A 1080p stream replaced by the same framing at a higher resolution.
+		const chosen = derive({ s: 3, t: { x: -150, y: 60 } });
+		const bigger = pictureSize(stage, { w: 3840, h: 2160 });
+		const t = translationForCentre(chosen, 3, bigger, stage);
+		const after = toNormalised(centreContentPoint({ s: 3, t }), bigger);
+		expect(after.x).toBeCloseTo(chosen.x, 9);
+		expect(after.y).toBeCloseTo(chosen.y, 9);
+	});
+
+	it('survives a rotation, stage and stream swapping together', () => {
+		const chosen = { x: 0.58, y: 0.37 };
+		const landscape: Size = { w: 800, h: 400 };
+		const rotated = pictureSize(landscape, { w: 1080, h: 1920 });
+		const t = translationForCentre(chosen, 2, rotated, landscape);
+		const after = toNormalised(centreContentPoint({ s: 2, t }), rotated);
+		expect(after.x).toBeCloseTo(chosen.x, 9);
+		expect(after.y).toBeCloseTo(chosen.y, 9);
+	});
+});
+
+describe('anchorPosition', () => {
+	it('is the stage centre whenever the view can hold it there', () => {
+		for (const s of [1.5, 2, 4]) {
+			for (const u of [
+				{ x: 0.5, y: 0.5 },
+				{ x: 0.52, y: 0.49 }
+			]) {
+				const p = anchorPosition(u, s, picture, stage);
+				expect(p.x).toBeCloseTo(0, 6);
+				expect(p.y).toBeCloseTo(0, 6);
+			}
+		}
+	});
+
+	it('shows where the anchor really is once clamping has pushed it off centre', () => {
+		// Hard against the left edge of the picture: the view cannot centre it.
+		const p = anchorPosition({ x: 0.02, y: 0.5 }, 1, picture, stage);
+		expect(p.x).toBeLessThan(-1);
+		expect(p.y).toBeCloseTo(0, 6);
+	});
+
+	it('stays inside the stage, so the crosshair is always drawn on screen', () => {
+		for (const u of [
+			{ x: 0, y: 0 },
+			{ x: 1, y: 1 },
+			{ x: 0.5, y: 0 }
+		]) {
+			const p = anchorPosition(u, 1, picture, stage);
+			expect(Math.abs(p.x)).toBeLessThanOrEqual(stage.w / 2 + 1e-9);
+			expect(Math.abs(p.y)).toBeLessThanOrEqual(stage.h / 2 + 1e-9);
+		}
 	});
 });

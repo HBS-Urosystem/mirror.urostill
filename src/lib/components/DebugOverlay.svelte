@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { innerHeight, innerWidth } from 'svelte/reactivity/window';
 	import type { UpgradeState } from '$lib/camera.svelte';
-	import { sourcePixelsPerScreenPixel, type Size } from '$lib/viewport';
+	import { sourcePixelsPerScreenPixel, type Size, type Vec } from '$lib/viewport';
 	import type { WakeLockStatus } from '$lib/wakelock.svelte';
 
 	let {
@@ -12,7 +12,8 @@
 		cover,
 		zoom,
 		upgradeState,
-		wakeLockStatus
+		wakeLockStatus,
+		centre
 	}: {
 		stream: MediaStream | null;
 		video: HTMLVideoElement | null;
@@ -22,6 +23,8 @@
 		zoom: number;
 		upgradeState: UpgradeState;
 		wakeLockStatus: WakeLockStatus;
+		/** The anchor, in normalised picture coordinates. */
+		centre: Vec;
 	} = $props();
 
 	/** Not in the standard typings: it comes from the Image Capture extensions. */
@@ -125,6 +128,7 @@
 		['stream', `${streamSize.w}×${streamSize.h}`],
 		['facing', settings.facingMode ?? '—'],
 		['zoom', `${zoom.toFixed(2)}×`],
+		['anchor u,v', `${centre.x.toFixed(3)}, ${centre.y.toFixed(3)}`],
 		['cover', cover.toFixed(3)],
 		['src px / device px', quality.toFixed(2)],
 		['dpr', dpr.toFixed(2)],
