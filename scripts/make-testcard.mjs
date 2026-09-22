@@ -10,6 +10,24 @@
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+/**
+ * `--scale 1.163` compensates for an output path that cannot be set to 100 %:
+ * a printer that insists on fitting to the page, or a screen whose CSS
+ * millimetre is not a millimetre. Measure the ruler, divide 50 by what you
+ * got, pass that, and measure again. The default writes the true-size card.
+ */
+const args = process.argv.slice(2);
+const flag = (name) => {
+	const at = args.indexOf(name);
+	return at === -1 ? undefined : args[at + 1];
+};
+const SCALE = Number(flag('--scale') ?? 1);
+if (!Number.isFinite(SCALE) || SCALE <= 0) {
+	console.error('--scale must be a positive number');
+	process.exit(1);
+}
+const OUT_NAME = flag('--out') ?? (SCALE === 1 ? 'testcard.svg' : 'testcard-scaled.svg');
+
 const W = 210;
 const H = 297;
 const MARGIN = 15;
@@ -34,7 +52,9 @@ const text = (x, y, capMm, content, extra = '') =>
 
 add(
 	`<?xml version="1.0" encoding="UTF-8"?>`,
-	`<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}">`,
+	// The page grows with the scale while the viewBox does not, so everything is
+	// drawn larger and nothing is clipped off the edge.
+	`<svg xmlns="http://www.w3.org/2000/svg" width="${(W * SCALE).toFixed(3)}mm" height="${(H * SCALE).toFixed(3)}mm" viewBox="0 0 ${W} ${H}">`,
 	`<rect width="${W}" height="${H}" fill="#ffffff"/>`,
 	`<g fill="#000000">`
 );
@@ -128,8 +148,9 @@ add(
 
 add(`</g>`, `</svg>`, '');
 
-const out = fileURLToPath(new URL('../docs/testcard.svg', import.meta.url));
+const out = fileURLToPath(new URL(`../docs/${OUT_NAME}`, import.meta.url));
 writeFileSync(out, parts.join('\n'));
 console.log(
-	`wrote docs/testcard.svg (${BAR_WIDTHS.length} bar groups, ${CAP_HEIGHTS.length} text lines)`
+	`wrote docs/${OUT_NAME} at ${SCALE}× (${BAR_WIDTHS.length} bar groups, ${CAP_HEIGHTS.length} text lines)`
 );
+if (SCALE !== 1) console.log('Check the ruler against a real one before using it.');

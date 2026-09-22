@@ -11,9 +11,25 @@ once at 1080p and once at whatever the upgrade settles on.
 
 ## Before you start
 
-1. **Print `docs/testcard.svg` at 100 %.** Turn off "fit to page" and "shrink to
-   fit". Then put a real ruler against the printed ruler: 0 to 50 must be 50 mm.
-   If it isn't, the bar widths mean nothing — print it again.
+1. **Get the card to true size.** Print `docs/testcard.svg` at 100 %, with "fit
+   to page" and "shrink to fit" off. Then hold a real ruler against the printed
+   one: 0 to 50 must be 50 mm. If it isn't, nothing else on the card means
+   anything.
+
+   The card works on a screen too, which saves printing — but a browser's CSS
+   millimetre is not a millimetre, so it must be measured the same way. Hold a
+   real ruler to the screen and read the card's ruler. If it comes out short,
+   regenerate the card compensated and measure again:
+
+   ```bash
+   node scripts/make-testcard.mjs --scale 1.163   # 50 ÷ what you measured
+   ```
+
+   That writes `docs/testcard-scaled.svg` and leaves the true-size card alone.
+
+   A laptop cannot photograph its own screen, so for a laptop row the card has
+   to be somewhere else: on paper, on a phone or tablet, or on a second monitor.
+
 2. Stand the card upright, flat and evenly lit. No glare across it.
 3. Measure distances **from the card to the camera**, not to the screen.
 4. You need a real HTTPS address. A phone will not trust the certificate
