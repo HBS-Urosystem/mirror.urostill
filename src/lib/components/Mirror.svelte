@@ -1,8 +1,11 @@
 <script lang="ts">
 	import ControlPill from './ControlPill.svelte';
 	import DebugOverlay from './DebugOverlay.svelte';
+	import Crosshair from '$lib/icons/Crosshair.svelte';
 	import type { UpgradeState } from '$lib/camera.svelte';
 	import {
+		CROSSHAIR_FADE_MS,
+		CROSSHAIR_HOLD_MS,
 		HALO_DEFAULT,
 		HALO_OPEN_MS,
 		PILL_AUTOHIDE_MS,
@@ -72,6 +75,9 @@
 	 */
 	let centre = $state<Vec>({ x: 0.5, y: 0.5 });
 	let controlsVisible = $state(true);
+	let crosshairVisible = $state(false);
+	/** Set while a drag is in progress, for the cursor. */
+	let dragging = $state(false);
 
 	const limits = { min: ZOOM_MIN, max: ZOOM_MAX };
 
@@ -112,15 +118,43 @@
 		if (controlsVisible) keepControlsVisible();
 	}
 
+	let crosshairTimer: ReturnType<typeof setTimeout> | undefined;
+	/**
+	 * The crosshair marks what the mirror will follow from phase 7. It shows
+	 * while the user is choosing that, from any input, and holds afterwards.
+	 */
+	function showCrosshair() {
+		crosshairVisible = true;
+		clearTimeout(crosshairTimer);
+		crosshairTimer = setTimeout(() => (crosshairVisible = false), CROSSHAIR_HOLD_MS);
+	}
+
+	/** Zoom about a point, from the view as it is now. */
+	function zoomAt(at: Vec, ratio: number) {
+		applyView(pinch({ s: zoom, t: translation }, at, ratio, picture, stage, limits));
+		showCrosshair();
+		noteInteraction();
+	}
+
+	function reset() {
+		zoom = ZOOM_START;
+		showCrosshair();
+		keepControlsVisible();
+	}
+
 	const handlers: GestureHandlers = {
 		onpanstart() {
 			noteInteraction();
+			dragging = true;
 			gestureStart = { s: zoom, t: translation };
 		},
 		onpanmove(total) {
-			if (gestureStart) applyView(pan(gestureStart, total, picture, stage));
+			if (!gestureStart) return;
+			applyView(pan(gestureStart, total, picture, stage));
+			showCrosshair();
 		},
 		onpanend() {
+			dragging = false;
 			gestureStart = null;
 		},
 		onpinchstart() {
@@ -128,16 +162,24 @@
 			gestureStart = { s: zoom, t: translation };
 		},
 		onpinchmove(midpoint, ratio) {
-			if (gestureStart) applyView(pinch(gestureStart, midpoint, ratio, picture, stage, limits));
+			if (!gestureStart) return;
+			applyView(pinch(gestureStart, midpoint, ratio, picture, stage, limits));
+			showCrosshair();
 		},
 		onpinchend() {
 			gestureStart = null;
 		},
 		ontap: toggleControls,
-		ondoubletap() {
-			zoom = ZOOM_START;
-			keepControlsVisible();
-		}
+		onreset: reset,
+		onzoomat: zoomAt,
+		onnudge(delta) {
+			applyView(pan({ s: zoom, t: translation }, delta, picture, stage));
+			showCrosshair();
+			noteInteraction();
+		},
+		onleave: () => onexit(),
+		// On a desktop the controls come to the mouse, rather than being asked for.
+		onhover: keepControlsVisible
 	};
 
 	$effect(() => {
@@ -148,7 +190,10 @@
 
 	$effect(() => {
 		keepControlsVisible();
-		return () => clearTimeout(hideTimer);
+		return () => {
+			clearTimeout(hideTimer);
+			clearTimeout(crosshairTimer);
+		};
 	});
 
 	// The halo opens from the screen edge to its width, once, on start.
@@ -229,9 +274,21 @@
 		so a tap on a button cannot also read as a tap on the picture — which
 		would hide the button before its own click landed.
 	-->
+	<!--
+		Focusable, so the whole mirror can be driven from the keyboard. `application`
+		is the honest role: the stage handles arrows and +/-/0 itself, and a screen
+		reader should pass those keys through rather than use them for navigation.
+		The a11y rule below only knows a fixed list of interactive roles and does
+		not include `application`, which is a widget role and legitimately focusable.
+	-->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
-		class="absolute touch-none overflow-hidden bg-black select-none"
+		class="stage absolute touch-none overflow-hidden bg-black select-none"
+		class:dragging
 		style:inset="{halo}px"
+		role="application"
+		aria-label={t.title}
+		tabindex="0"
 		bind:this={stageElement}
 	>
 		<div
@@ -252,6 +309,15 @@
 			></video>
 		</div>
 	</div>
+
+	{#if crosshairVisible}
+		<div
+			class="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+			transition:fade={{ duration: reducedMotion.current ? 0 : CROSSHAIR_FADE_MS }}
+		>
+			<Crosshair />
+		</div>
+	{/if}
 
 	{#if controlsVisible}
 		<div
@@ -293,6 +359,20 @@
 </div>
 
 <style>
+	.stage {
+		cursor: grab;
+	}
+
+	.stage.dragging {
+		cursor: grabbing;
+	}
+
+	/* Lagoon is the focus ring for light surfaces; over the picture it is white. */
+	.stage:focus-visible {
+		outline: 3px solid #fff;
+		outline-offset: -3px;
+	}
+
 	/* Pure white, always. The halo is the light, not a decoration. */
 	.lit {
 		background-color: #ffffff;

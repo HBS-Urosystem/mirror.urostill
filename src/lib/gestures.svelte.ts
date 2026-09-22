@@ -1,4 +1,17 @@
-import { DOUBLE_TAP_MS, DOUBLE_TAP_SLOP_PX, TAP_MAX_MS, TAP_SLOP_PX } from './config';
+import {
+	DOUBLE_TAP_MS,
+	DOUBLE_TAP_SLOP_PX,
+	KEY_PAN_FAST,
+	KEY_PAN_STEP_PX,
+	KEY_ZOOM_STEP,
+	TAP_MAX_MS,
+	TAP_SLOP_PX,
+	WHEEL_LINE_PX,
+	WHEEL_NOTCH_PX,
+	WHEEL_PAGE_PX,
+	WHEEL_PINCH_FACTOR,
+	WHEEL_ZOOM_STEP
+} from './config';
 import type { Vec } from './viewport';
 
 /**
@@ -16,7 +29,47 @@ export interface GestureHandlers {
 	onpinchmove(midpoint: Vec, ratio: number): void;
 	onpinchend(): void;
 	ontap(): void;
-	ondoubletap(): void;
+	/** Double tap, `0`, or the zoom readout: back to 1×. */
+	onreset(): void;
+	/** Wheel, trackpad pinch or `+`/`-`: zoom by `ratio` about `at`. */
+	onzoomat(at: Vec, ratio: number): void;
+	/** Arrow keys: move the picture, the same way a drag would. */
+	onnudge(delta: Vec): void;
+	/** Escape, when the browser is not holding fullscreen. */
+	onleave(): void;
+	/** A mouse moved over the stage; on a desktop that is enough to want the controls. */
+	onhover(): void;
+}
+
+/**
+ * Wheel deltas arrive in pixels, lines or pages depending on the browser and
+ * the device. Everything downstream works in pixels.
+ */
+export function normaliseWheelDelta(
+	deltaY: number,
+	deltaMode: number,
+	linePx = WHEEL_LINE_PX,
+	pagePx = WHEEL_PAGE_PX
+): number {
+	if (deltaMode === 1) return deltaY * linePx;
+	if (deltaMode === 2) return deltaY * pagePx;
+	return deltaY;
+}
+
+/**
+ * The zoom ratio for one wheel event. `ctrlKey` means a trackpad pinch — both
+ * macOS and Windows report it that way — which needs a much finer factor than
+ * a mouse wheel's discrete notches. Scrolling up zooms in, as everywhere else.
+ */
+export function wheelZoomRatio(
+	deltaPx: number,
+	ctrlKey: boolean,
+	step = WHEEL_ZOOM_STEP,
+	pinchFactor = WHEEL_PINCH_FACTOR,
+	notchPx = WHEEL_NOTCH_PX
+): number {
+	if (ctrlKey) return Math.exp(-deltaPx * pinchFactor);
+	return step ** (-deltaPx / notchPx);
 }
 
 interface Point {
@@ -93,7 +146,11 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 
 	function onPointerMove(event: PointerEvent) {
 		const point = pointers.get(event.pointerId);
-		if (!point) return;
+		if (!point) {
+			// Hovering. On a desktop, moving the mouse is enough to ask for the controls.
+			if (event.pointerType === 'mouse' && pointers.size === 0) handlers.onhover();
+			return;
+		}
 		point.x = event.clientX;
 		point.y = event.clientY;
 
@@ -106,6 +163,8 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 
 		if (phase === 'maybe-tap') {
 			if (distance(point, panOrigin) < TAP_SLOP_PX) return;
+			// Past the slop: this is a drag, not a click.
+			element.style.cursor = 'grabbing';
 			// Pan from where the finger went down, so the picture stays under it.
 			beginPan(panOrigin);
 		}
@@ -131,7 +190,7 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 			distance(point, previous) < DOUBLE_TAP_SLOP_PX
 		) {
 			lastTap = null;
-			handlers.ondoubletap();
+			handlers.onreset();
 			return;
 		}
 		lastTap = { ...point, at: event.timeStamp };
@@ -139,6 +198,7 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 
 	function onPointerUp(event: PointerEvent) {
 		if (!pointers.delete(event.pointerId)) return;
+		if (pointers.size === 0) element.style.cursor = '';
 		try {
 			element.releasePointerCapture(event.pointerId);
 		} catch {
@@ -166,6 +226,54 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 		}
 	}
 
+	function onWheel(event: WheelEvent) {
+		// Always: the page has nothing to scroll, and a trackpad pinch would
+		// otherwise zoom the page itself.
+		event.preventDefault();
+		readCentre();
+		const ratio = wheelZoomRatio(normaliseWheelDelta(event.deltaY, event.deltaMode), event.ctrlKey);
+		if (ratio === 1) return;
+		handlers.onzoomat({ x: event.clientX - centre.x, y: event.clientY - centre.y }, ratio);
+	}
+
+	function onKeyDown(event: KeyboardEvent) {
+		if (event.altKey || event.ctrlKey || event.metaKey) return;
+		const step = KEY_PAN_STEP_PX * (event.shiftKey ? KEY_PAN_FAST : 1);
+
+		switch (event.key) {
+			case 'ArrowLeft':
+				handlers.onnudge({ x: step, y: 0 });
+				break;
+			case 'ArrowRight':
+				handlers.onnudge({ x: -step, y: 0 });
+				break;
+			case 'ArrowUp':
+				handlers.onnudge({ x: 0, y: step });
+				break;
+			case 'ArrowDown':
+				handlers.onnudge({ x: 0, y: -step });
+				break;
+			case '+':
+			case '=':
+				handlers.onzoomat({ x: 0, y: 0 }, KEY_ZOOM_STEP);
+				break;
+			case '-':
+				handlers.onzoomat({ x: 0, y: 0 }, 1 / KEY_ZOOM_STEP);
+				break;
+			case '0':
+				handlers.onreset();
+				break;
+			case 'Escape':
+				// Let the browser have the first Escape to leave fullscreen.
+				if (document.fullscreenElement) return;
+				handlers.onleave();
+				break;
+			default:
+				return;
+		}
+		event.preventDefault();
+	}
+
 	/** iOS Safari still fires its own pinch events on top of Pointer Events. */
 	const preventLegacyGesture = (event: Event) => event.preventDefault();
 
@@ -173,6 +281,8 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 	element.addEventListener('pointermove', onPointerMove);
 	element.addEventListener('pointerup', onPointerUp);
 	element.addEventListener('pointercancel', onPointerUp);
+	element.addEventListener('wheel', onWheel, { passive: false });
+	element.addEventListener('keydown', onKeyDown);
 	for (const name of ['gesturestart', 'gesturechange', 'gestureend']) {
 		element.addEventListener(name, preventLegacyGesture);
 	}
@@ -182,6 +292,8 @@ export function attachGestures(element: HTMLElement, handlers: GestureHandlers):
 		element.removeEventListener('pointermove', onPointerMove);
 		element.removeEventListener('pointerup', onPointerUp);
 		element.removeEventListener('pointercancel', onPointerUp);
+		element.removeEventListener('wheel', onWheel);
+		element.removeEventListener('keydown', onKeyDown);
 		for (const name of ['gesturestart', 'gesturechange', 'gestureend']) {
 			element.removeEventListener(name, preventLegacyGesture);
 		}

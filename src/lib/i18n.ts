@@ -10,6 +10,8 @@ const en = {
 	step1: 'Turn your screen brightness all the way up.',
 	step2: 'Stand the phone 30–40 cm away, screen facing you.',
 	step3: 'Tap Start mirror. Pinch to zoom, drag to move the picture.',
+	step2Desktop: 'Point the camera at what you want to see, about 40–60 cm away.',
+	step3Desktop: 'Click Start mirror. Scroll to zoom, drag to move the picture.',
 	privacy: 'The picture stays on this screen. Nothing is recorded, saved or sent.',
 	start: 'Start mirror',
 	retry: 'Try again',
@@ -26,7 +28,6 @@ const en = {
 	lightSoft: 'Light: soft',
 	lightBright: 'Light: bright',
 	zoomReset: 'Zoom {n}×, tap to reset',
-	locked: 'Centre locked',
 	paused: 'Tracking paused. Drag to set the centre again.'
 } as const;
 
@@ -38,6 +39,9 @@ const hu: Strings = {
 	step1: 'Állítsa a képernyő fényerejét maximumra.',
 	step2: 'Tegye a telefont állványra, 30–40 cm-re, képernyővel maga felé.',
 	step3: 'Koppintson a Tükör indítása gombra. Két ujjal nagyíthat, egy ujjal mozgathatja a képet.',
+	step2Desktop: 'Irányítsa a kamerát arra, amit látni szeretne, nagyjából 40–60 cm-ről.',
+	step3Desktop:
+		'Kattintson a Tükör indítása gombra. Görgetéssel nagyíthat, húzással mozgathatja a képet.',
 	privacy: 'A kép ezen a képernyőn marad. Semmit nem rögzít, nem ment és nem küld el.',
 	start: 'Tükör indítása',
 	retry: 'Újra',
@@ -55,7 +59,6 @@ const hu: Strings = {
 	lightSoft: 'Fény: halvány',
 	lightBright: 'Fény: erős',
 	zoomReset: 'Nagyítás {n}×, koppintson a visszaállításhoz',
-	locked: 'Középpont rögzítve',
 	paused: 'A követés szünetel. Húzza a képet az új középpont beállításához.'
 };
 

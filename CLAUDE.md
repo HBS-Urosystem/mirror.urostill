@@ -2,7 +2,9 @@
 
 ## What this is
 
-A front-camera **lighted mirror** that runs in the browser and installs as a PWA. It shows the front camera live and mirrored, lets the user pinch to zoom and drag to position the picture, keeps the screen awake, and turns the edge of the screen into a white light frame (the "halo"). That is the whole product.
+A front-camera **lighted mirror** that runs in the browser and installs as a PWA. It shows the camera live and mirrored, lets the user zoom and drag to position the picture, keeps the screen awake, and turns the edge of the screen into a white light frame (the "halo"). That is the whole product.
+
+It runs on phones, tablets, laptops and any computer with a webcam. Every action has a touch, a pointer and a keyboard route; never gate behaviour on the device type.
 
 Working title: **Mirror**. The name, branding and final copy are not decided.
 
@@ -35,7 +37,7 @@ These exist because the regulatory route for this app is still open, and breakin
 - Client-only app: `export const ssr = false; export const prerender = true;` in `src/routes/+layout.ts`.
 - Reactive state lives in `*.svelte.ts` modules under `src/lib/`.
 - Geometry and motion maths are plain `.ts` with no DOM access, and every exported function has unit tests.
-- Input is Pointer Events only. The mirror stage has `touch-action: none`.
+- Pointer input is Pointer Events only — never touch or mouse events. Zoom also comes from `wheel` (mouse and trackpad), and every action has a keyboard route. The mirror stage has `touch-action: none` and is focusable.
 - Every user-facing string lives in `src/lib/i18n.ts` (keys `en`, `hu`). Hungarian uses the formal address (magázás).
 - Every tunable (zoom limits, halo widths, timeouts, thresholds) lives in `src/lib/config.ts`.
 - Icons are small inline SVG components in `src/lib/icons/`.
@@ -57,5 +59,5 @@ These exist because the regulatory route for this app is still open, and breakin
 
 - Work through `PLAN.md` one phase at a time. At the end of each phase, stop, summarise what changed, and wait for review.
 - Tick the checkboxes in `PLAN.md` as items are completed.
-- Camera, wake lock, gestures and performance can only be verified on real phones. Don't claim they work on the basis of a desktop run — list exactly what needs checking on a device and what to look for.
+- Camera, wake lock, touch gestures and performance can only be verified on real devices. A desktop run proves the desktop path only — list exactly what needs checking on a phone and what to look for.
 - Prefer the simplest thing that meets the acceptance criteria. This app should stay small.

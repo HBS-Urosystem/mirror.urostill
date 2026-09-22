@@ -28,6 +28,7 @@
 	type ZoomCapability = { min: number; max: number; step?: number };
 
 	const dpr = window.devicePixelRatio || 1;
+	const pointerKind = window.matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine';
 
 	const track = $derived(stream?.getVideoTracks()[0] ?? null);
 	const settings: MediaTrackSettings = $derived(track?.getSettings() ?? {});
@@ -127,6 +128,7 @@
 		['cover', cover.toFixed(3)],
 		['src px / device px', quality.toFixed(2)],
 		['dpr', dpr.toFixed(2)],
+		['pointer', pointerKind],
 		['wake lock', wakeLockStatus],
 		['frame', `${frameMs.toFixed(1)} ms`]
 	]);

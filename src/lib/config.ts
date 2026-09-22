@@ -36,6 +36,29 @@ export const HALO_OPEN_MS = 400;
 export const PILL_AUTOHIDE_MS = 3000;
 export const PILL_FADE_MS = 150;
 
+/**
+ * Wheel and trackpad. A wheel notch is about 100 px of delta; a trackpad
+ * pinch arrives as a wheel event with ctrlKey set and much smaller deltas.
+ * Line and page deltas are normalised to pixels first.
+ */
+export const WHEEL_ZOOM_STEP = 1.15;
+export const WHEEL_PINCH_FACTOR = 0.01;
+export const WHEEL_NOTCH_PX = 100;
+export const WHEEL_LINE_PX = 16;
+export const WHEEL_PAGE_PX = 400;
+
+/** Keyboard. */
+export const KEY_PAN_STEP_PX = 24;
+export const KEY_PAN_FAST = 4;
+export const KEY_ZOOM_STEP = 1.2;
+
+/** The centre crosshair: how long it stays, and how long it takes to go. */
+export const CROSSHAIR_HOLD_MS = 1200;
+export const CROSSHAIR_FADE_MS = 250;
+
+/** Phase 7 tracks only above this zoom; below it there is nothing to gain. */
+export const TRACK_MIN_ZOOM = 1.1;
+
 /** Gesture recognition. */
 export const TAP_SLOP_PX = 8;
 export const TAP_MAX_MS = 250;

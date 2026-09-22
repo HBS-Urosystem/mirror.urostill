@@ -2,6 +2,7 @@
 	import Close from '$lib/icons/Close.svelte';
 	import type { Strings } from '$lib/i18n';
 	import { isIos, isStandalone } from '$lib/platform';
+	import { MediaQuery } from 'svelte/reactivity';
 
 	let {
 		t,
@@ -12,6 +13,14 @@
 		busy?: boolean;
 		onstart: () => void;
 	} = $props();
+
+	/**
+	 * Copy and layout only — never behaviour, because a hybrid laptop has both
+	 * a touchscreen and a trackpad and either may be in use.
+	 */
+	const coarse = new MediaQuery('(pointer: coarse)');
+	const step2 = $derived(coarse.current ? t.step2 : t.step2Desktop);
+	const step3 = $derived(coarse.current ? t.step3 : t.step3Desktop);
 
 	// Only iOS needs telling, and only while the app is still a web page.
 	// Dismissal lasts for this visit only: nothing is stored — hard rule 2.
@@ -27,14 +36,23 @@
 <main
 	class="flex min-h-dvh flex-col bg-porcelain pt-[calc(2.5rem+env(safe-area-inset-top))] pr-[max(1.5rem,env(safe-area-inset-right))] pb-[calc(1.5rem+env(safe-area-inset-bottom))] pl-[max(1.5rem,env(safe-area-inset-left))] text-ink"
 >
-	<div class="mx-auto flex w-full max-w-[34ch] flex-1 flex-col justify-between gap-10">
+	<!--
+		On a phone the steps sit at the top and the button in the thumb zone. On a
+		desktop that would stretch a column across the whole screen, so the block
+		is centred instead.
+	-->
+	<div
+		class="mx-auto flex w-full flex-1 flex-col gap-10 {coarse.current
+			? 'max-w-[34ch] justify-between'
+			: 'max-w-[420px] justify-center'}"
+	>
 		<div>
 			<h1 class="text-title">{t.title}</h1>
 
 			<ol class="mt-8 list-decimal space-y-4 pl-7 text-body marker:font-semibold">
 				<li>{t.step1}</li>
-				<li>{t.step2}</li>
-				<li>{t.step3}</li>
+				<li>{step2}</li>
+				<li>{step3}</li>
 			</ol>
 
 			<p class="mt-8 text-note">{t.privacy}</p>
