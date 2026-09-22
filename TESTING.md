@@ -117,3 +117,32 @@ iPhone 14 Pro, iOS 26, Safari tab, from the phase 1–2 passes:
 - `src px / device px` 1.94 at 1× and 0.65 at 3×, against 0.92 and 0.31 at 1080p.
 - `native zoom` 1–10. `getCapabilities()` returns no `step` field at all.
 - 4× was already usable at 1080p.
+
+MacBook Pro 15" 2014, built-in FaceTime HD, Chrome on localhost:
+
+- `camera max` **1280×720 @ 30**, so the upgrade has nothing to upgrade to and
+  correctly reports `unavailable`. Built-in webcams capping at 720p is what the
+  plan expected, and it is now measured.
+- `native zoom` **none**. First desktop data point: the `zoom` capability seen on
+  the iPhone is not a given, and a laptop-only test set would have missed phase 5b
+  entirely.
+- **`fps` 9.6 measured against 30 reported.** Not yet explained — see below.
+
+### Open: 9.6 fps on the 2014 laptop
+
+The camera claims 30 and delivers under 10. Three candidates, each with a cheap test:
+
+1. **The camera is starved of light.** Webcams routinely halve or quarter their
+   frame rate to lengthen exposure. Read `fps` again in a bright room.
+2. **`backdrop-filter` on the pill.** A 16 px blur over live video is expensive on
+   a 2014 Intel GPU. Read `fps` with the pill up, then again after it hides.
+3. **The machine cannot render the page at all.** Read the `frame` row: near
+   16.7 ms means the page is fine and only the video is slow; near 100 ms means
+   everything is.
+
+This matters beyond one old laptop. `RES_FPS_FLOOR` assumes a low frame rate means
+the resolution is too high. If a dim room can push a camera under 24 fps on its
+own — and a dim bathroom is the actual use case — the guard would give up
+resolution to fix something resolution did not cause, and the frame rate would
+stay low anyway. If that is what this turns out to be, the guard should compare
+the frame rate before and after the upgrade rather than against a fixed floor.
