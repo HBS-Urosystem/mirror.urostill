@@ -34,28 +34,42 @@ test('the halo is pure white and insets the stage evenly on all four sides', asy
 	}
 });
 
-test('the light button cycles bright → off → soft, and says which it is', async ({ page }) => {
+test('the light button walks down and back up, and says which it is', async ({ page }) => {
 	await startMirror(page);
 	await showControls(page);
 
 	const light = () => page.getByRole('button', { name: /^Light: / });
-	await expect(light()).toHaveAttribute('aria-label', 'Light: bright');
-
-	// The icon says it too: eight rays, none, four.
 	const rays = () => light().locator('line').count();
+
+	/** One press, then what the button says, how wide the halo is, and its rays. */
+	async function press() {
+		await light().click();
+		await haloSettled(page);
+		await showControls(page);
+		return {
+			label: await light().getAttribute('aria-label'),
+			inset: (await halo(page)).left,
+			rays: await rays()
+		};
+	}
+
+	await expect(light()).toHaveAttribute('aria-label', 'Light: bright');
 	expect(await rays()).toBe(8);
 
-	await light().click();
-	await expect(light()).toHaveAttribute('aria-label', 'Light: off');
-	await haloSettled(page);
-	expect((await halo(page)).left).toBeCloseTo(0, 0);
-	expect(await rays()).toBe(0);
+	// It turns around at each end rather than wrapping, so the brightest is
+	// never one press away from nothing.
+	const walk = [await press(), await press(), await press(), await press()];
+	expect(walk.map((step) => step.label)).toEqual([
+		'Light: soft',
+		'Light: off',
+		'Light: soft',
+		'Light: bright'
+	]);
+	expect(walk.map((step) => step.rays)).toEqual([4, 0, 4, 8]);
 
-	await light().click();
-	await expect(light()).toHaveAttribute('aria-label', 'Light: soft');
-	await haloSettled(page);
-	expect((await halo(page)).left).toBeCloseTo(SHORT_SIDE * LEVELS.soft, 0);
-	expect(await rays()).toBe(4);
+	expect(walk[0].inset).toBeCloseTo(SHORT_SIDE * LEVELS.soft, 0);
+	expect(walk[1].inset).toBeCloseTo(0, 0);
+	expect(walk[3].inset).toBeCloseTo(SHORT_SIDE * LEVELS.bright, 0);
 });
 
 test('the picture still covers the stage after the halo changes width', async ({ page }) => {

@@ -16,7 +16,7 @@
 		type HaloLevel
 	} from '$lib/config';
 	import { attachGestures, type GestureHandlers } from '$lib/gestures.svelte';
-	import { easeOutCubic, haloWidth, nextHaloLevel, stageSize } from '$lib/halo';
+	import { easeOutCubic, haloWidth, nextHaloStep, stageSize } from '$lib/halo';
 	import type { Strings } from '$lib/i18n';
 	import {
 		centreContentPoint,
@@ -64,6 +64,8 @@
 	let streamH = $state(0);
 
 	let level = $state<HaloLevel>(HALO_DEFAULT);
+	/** The direction the light is being taken, so the button can turn around at the ends. */
+	let rising = $state(true);
 	/** 0 at the edge of the screen, 1 at full width. The one choreographed motion. */
 	let openProgress = $state(0);
 
@@ -331,7 +333,7 @@
 					{level}
 					{zoom}
 					onlight={() => {
-						level = nextHaloLevel(level);
+						({ level, rising } = nextHaloStep({ level, rising }));
 						keepControlsVisible();
 					}}
 					onzoomreset={() => {

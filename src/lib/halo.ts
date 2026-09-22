@@ -11,9 +11,23 @@ export function haloWidth(level: HaloLevel, viewport: Size): number {
 	return HALO_LEVELS[level] * short;
 }
 
-export function nextHaloLevel(level: HaloLevel): HaloLevel {
-	const at = HALO_ORDER.indexOf(level);
-	return HALO_ORDER[(at + 1) % HALO_ORDER.length];
+export interface HaloStep {
+	level: HaloLevel;
+	/** Which way the last press was heading. */
+	rising: boolean;
+}
+
+/**
+ * Off → soft → bright → soft → off, and back up again. It turns around at each
+ * end rather than wrapping, so one press can never take the light from its
+ * brightest to nothing — which in a dark room is a jolt — and a level pressed
+ * past can be taken back with a single press instead of two.
+ */
+export function nextHaloStep(step: HaloStep): HaloStep {
+	const at = HALO_ORDER.indexOf(step.level);
+	const top = HALO_ORDER.length - 1;
+	const rising = step.rising ? at < top : at === 0;
+	return { level: HALO_ORDER[rising ? at + 1 : at - 1], rising };
 }
 
 /** The stage is the viewport inset by the halo on all sides. */

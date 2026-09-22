@@ -1,6 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { HALO_LEVELS } from '../../src/lib/config';
-import { easeOutCubic, haloWidth, nextHaloLevel, stageSize, sunRays } from '../../src/lib/halo';
+import {
+	easeOutCubic,
+	haloWidth,
+	nextHaloStep,
+	stageSize,
+	sunRays,
+	type HaloStep
+} from '../../src/lib/halo';
+import type { HaloLevel } from '../../src/lib/config';
 
 describe('haloWidth', () => {
 	it('measures against the short side, whichever way the phone is held', () => {
@@ -24,11 +32,42 @@ describe('haloWidth', () => {
 	});
 });
 
-describe('nextHaloLevel', () => {
-	it('cycles off → soft → bright → off', () => {
-		expect(nextHaloLevel('off')).toBe('soft');
-		expect(nextHaloLevel('soft')).toBe('bright');
-		expect(nextHaloLevel('bright')).toBe('off');
+describe('nextHaloStep', () => {
+	/** Press the button `n` times from a starting step and list where it went. */
+	const walk = (start: HaloStep, presses: number) => {
+		let step = start;
+		const seen: HaloLevel[] = [];
+		for (let i = 0; i < presses; i++) {
+			step = nextHaloStep(step);
+			seen.push(step.level);
+		}
+		return seen;
+	};
+
+	it('goes up to the top, turns around, and comes back down', () => {
+		expect(walk({ level: 'off', rising: true }, 4)).toEqual(['soft', 'bright', 'soft', 'off']);
+	});
+
+	it('turns around at the bottom too, so the button never stops working', () => {
+		expect(walk({ level: 'off', rising: false }, 2)).toEqual(['soft', 'bright']);
+	});
+
+	it('takes one press to come back down from the default', () => {
+		expect(nextHaloStep({ level: 'bright', rising: true })).toEqual({
+			level: 'soft',
+			rising: false
+		});
+	});
+
+	it('never jumps from the brightest straight to nothing', () => {
+		let step: HaloStep = { level: 'off', rising: true };
+		let previous: HaloLevel = step.level;
+		for (let i = 0; i < 12; i++) {
+			step = nextHaloStep(step);
+			expect(previous === 'bright' && step.level === 'off').toBe(false);
+			expect(previous === 'off' && step.level === 'bright').toBe(false);
+			previous = step.level;
+		}
 	});
 });
 

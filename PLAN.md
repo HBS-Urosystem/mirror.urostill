@@ -384,13 +384,14 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
 
 ### Phase 0 — Scaffold and guardrails
 
-- [ ] SvelteKit + Svelte 5 + TypeScript strict; `adapter-static`; `ssr = false`, `prerender = true`.
-- [ ] Tailwind v4 via `@tailwindcss/vite`; daisyUI 5 via `@plugin "daisyui"`; theme `halo` with the tokens from section 1.
-- [ ] Self-hosted font as described in section 1.
-- [ ] CSP through SvelteKit (it hashes its own inline bootstrap script into a `<meta>` CSP for prerendered pages):
+- [x] SvelteKit + Svelte 5 + TypeScript strict; `adapter-static`; `ssr = false`, `prerender = true`.
+- [x] Tailwind v4 via `@tailwindcss/vite`; daisyUI 5 via `@plugin "daisyui"`; theme `halo` with the tokens from section 1.
+- [x] Self-hosted font as described in section 1.
+- [x] CSP through SvelteKit (it hashes its own inline bootstrap script into a `<meta>` CSP for prerendered pages):
 
   ```js
-  // svelte.config.js → kit.csp
+  // vite.config.ts → sveltekit({ ... }) — since SvelteKit 2.62 the kit config
+  // goes straight to the Vite plugin, and `sv create` writes no svelte.config.js
   csp: {
     mode: 'hash',
     directives: {
@@ -410,7 +411,7 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
   }
   ```
 
-- [ ] `static/_headers` for what a `<meta>` CSP can't do:
+- [x] `static/_headers` for what a `<meta>` CSP can't do:
 
   ```
   /*
@@ -424,11 +425,11 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
     Cache-Control: no-cache
   ```
 
-- [ ] `app.html`: `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`, `<meta name="robots" content="noindex, nofollow">`, `theme-color #FFFFFF`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style = black-translucent`, apple-touch-icon, manifest link.
-- [ ] `scripts/check-privacy.mjs`: scan `src/` and fail on any of `MediaRecorder`, `takePhoto`, `grabFrame`, `toDataURL`, `toBlob`, `readPixels` (r2), `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `sendBeacon`, `XMLHttpRequest`, `WebSocket`, `EventSource`, ` download=`, `fetch(` with an absolute `http(s)://` URL, and `getImageData` outside `src/lib/motion/`. Wire it into `npm run check`.
-- [ ] Vitest configured. Playwright configured with Chromium flags `--use-fake-ui-for-media-stream` and `--use-fake-device-for-media-stream`.
-- [ ] `npm run dev:https` using `@vitejs/plugin-basic-ssl` (dev only), for LAN phone checks. Note: a phone on plain `http://192.168.x.x` gets no camera.
-- [ ] Netlify: build `npm run build`, publish `build`. Deploy previews on; this is the main way to test on phones (real HTTPS, no certificate warnings). Turn off form detection and snippet injection in the site settings.
+- [x] `app.html`: `<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">`, `<meta name="robots" content="noindex, nofollow">`, `theme-color #FFFFFF`, `apple-mobile-web-app-capable`, `apple-mobile-web-app-status-bar-style = black-translucent`, apple-touch-icon, manifest link.
+- [x] `scripts/check-privacy.mjs`: scan `src/` and fail on any of `MediaRecorder`, `takePhoto`, `grabFrame`, `toDataURL`, `toBlob`, `readPixels` (r2), `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `sendBeacon`, `XMLHttpRequest`, `WebSocket`, `EventSource`, ` download=`, `fetch(` with an absolute `http(s)://` URL, and `getImageData` outside `src/lib/motion/`. Wire it into `npm run check`.
+- [x] Vitest configured. Playwright configured with Chromium flags `--use-fake-ui-for-media-stream` and `--use-fake-device-for-media-stream`.
+- [x] `npm run dev:https` using `@vitejs/plugin-basic-ssl` (dev only), for LAN phone checks. Note: a phone on plain `http://192.168.x.x` gets no camera.
+- [ ] Netlify (needs the account holder): `netlify.toml` is in the repo — build `npm run build`, publish `build`. Deploy previews on; this is the main way to test on phones (real HTTPS, no certificate warnings). Turn off form detection and snippet injection in the site settings.
 
 **Acceptance**
 
@@ -439,20 +440,20 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
 
 ### Phase 1 — Camera and mirror
 
-- [ ] Intro screen with copy from `i18n.ts`; language from `navigator.language` (`hu*` → Hungarian, otherwise English).
-- [ ] `camera.svelte.ts` with the constraints and error mapping above; `ErrorView` with Try again and Exit.
-- [ ] Resolution upgrade with the fps guard (section 2, Camera). The chosen mode lives in memory for the session only.
-- [ ] Stage with explicit cover sizing (section 2), mirrored video, `autoplay muted playsinline`.
-- [ ] Resize, rotation and stream-size handling.
-- [ ] Suspend and resume on visibility change and `pagehide`.
-- [ ] `wakelock.svelte.ts`: `navigator.wakeLock.request('screen')` when live; re-acquire on `visibilitychange` → visible; release on exit and suspend. If unsupported, the mirror still works; debug shows the status.
-- [ ] On Start, call `requestFullscreen()` where it exists (Android Chrome); ignore failures.
-- [ ] `DebugOverlay` behind `?debug=1`, showing:
+- [x] Intro screen with copy from `i18n.ts`; language from `navigator.language` (`hu*` → Hungarian, otherwise English).
+- [x] `camera.svelte.ts` with the constraints and error mapping above; `ErrorView` with Try again and Exit.
+- [x] Resolution upgrade with the fps guard (section 2, Camera). The chosen mode lives in memory for the session only.
+- [x] Stage with explicit cover sizing (section 2), mirrored video, `autoplay muted playsinline`.
+- [x] Resize, rotation and stream-size handling.
+- [x] Suspend and resume on visibility change and `pagehide`.
+- [x] `wakelock.svelte.ts`: `navigator.wakeLock.request('screen')` when live; re-acquire on `visibilitychange` → visible; release on exit and suspend. If unsupported, the mirror still works; debug shows the status.
+- [x] On Start, call `requestFullscreen()` where it exists (Android Chrome); ignore failures.
+- [x] `DebugOverlay` behind `?debug=1`, showing:
   - **capabilities** from `track.getCapabilities()`: max width × height, max frame rate, and the `zoom` range and step if present (or "no zoom");
   - the mode in use from `track.getSettings()` and whether the upgrade succeeded, fell back, or wasn't attempted;
   - **measured** fps (frame counter), next to the reported one;
   - facing mode, current zoom, **source pixels per screen pixel at the current zoom**, wake lock status, frame time.
-- [ ] Playwright smoke test: intro renders → Start → video is playing (`readyState ≥ 2`) → Exit returns to the intro.
+- [x] Playwright smoke test: intro renders → Start → video is playing (`readyState ≥ 2`) → Exit returns to the intro.
 
 **Acceptance — to be checked on real phones**
 
@@ -464,10 +465,10 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
 
 ### Phase 2 — Zoom and pan
 
-- [ ] `viewport.ts` with unit tests: clamp, pan, pinch about a midpoint, reset, re-derivation after resize and rotation, zoom limits.
-- [ ] `gestures.svelte.ts` with tap, double tap, pan, pinch and pinch-to-pan handover.
-- [ ] iOS `gesturestart` / `gesturechange` prevention on the stage.
-- [ ] Zoom range and start value from `config.ts`.
+- [x] `viewport.ts` with unit tests: clamp, pan, pinch about a midpoint, reset, re-derivation after resize and rotation, zoom limits.
+- [x] `gestures.svelte.ts` with tap, double tap, pan, pinch and pinch-to-pan handover.
+- [x] iOS `gesturestart` / `gesturechange` prevention on the stage.
+- [x] Zoom range and start value from `config.ts`.
 
 **Acceptance**
 
@@ -479,11 +480,11 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
 
 ### Phase 3 — Halo and glass UI
 
-- [ ] Halo levels off / soft / bright from `config.ts`, default bright. The halo is the page background (`#FFF`), and the stage is inset by the halo width on all sides. Safe-area regions are white too.
-- [ ] Halo opening motion on start (section 1, principle 5), instant with reduced motion.
-- [ ] `ControlPill`: Light (cycles off → soft → bright), zoom readout (tap resets to 1×), Exit. Bottom-centre of the stage, above `env(safe-area-inset-bottom)`. Hides after 3 s without interaction; a tap on the stage shows or hides it. 150 ms fade, none with reduced motion.
-- [ ] `glass-smoke` utility with its fallback; check the `-webkit-` prefix in the built CSS.
-- [ ] Accessibility: `aria-label` on each pill button that includes the current state, visible focus rings, 48 px minimum targets.
+- [x] Halo levels off / soft / bright from `config.ts`, default bright. The halo is the page background (`#FFF`), and the stage is inset by the halo width on all sides. Safe-area regions are white too.
+- [x] Halo opening motion on start (section 1, principle 5), instant with reduced motion.
+- [x] `ControlPill`: Light (walks off → soft → bright → soft → off, turning around at each end rather than wrapping, so the brightest is never one press from nothing), zoom readout (tap resets to 1×), Exit. Bottom-centre of the stage, above `env(safe-area-inset-bottom)`. Hides after 3 s without interaction; a tap on the stage shows or hides it. 150 ms fade, none with reduced motion.
+- [x] `glass-smoke` utility with its fallback; check the `-webkit-` prefix in the built CSS.
+- [x] Accessibility: `aria-label` on each pill button that includes the current state, visible focus rings, 48 px minimum targets.
 
 **Acceptance**
 
@@ -494,7 +495,7 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
 
 ### Phase 4 — PWA
 
-- [ ] `static/manifest.webmanifest`:
+- [x] `static/manifest.webmanifest`:
 
   ```json
   {
@@ -520,9 +521,9 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
   }
   ```
 
-- [ ] Icons: a white ring on Lagoon, echoing the halo. No letters, no brand, nothing camera-like.
-- [ ] `src/service-worker.ts` using `$service-worker` (`build`, `files`, `version`): precache everything in a versioned cache, delete old caches on activate, cache-first for same-origin GET, navigation requests fall back to the cached `/`. Cache nothing else.
-- [ ] Install hint on the intro, iOS only, only when not running standalone. Dismissible for the current session (a component flag, not storage).
+- [x] Icons: a white ring on Lagoon, echoing the halo. No letters, no brand, nothing camera-like.
+- [x] `src/service-worker.ts` using `$service-worker` (`build`, `files`, `version`): precache everything in a versioned cache, delete old caches on activate, cache-first for same-origin GET, navigation requests fall back to the cached `/`. Cache nothing else.
+- [x] Install hint on the intro, iOS only, only when not running standalone. Dismissible for the current session (a component flag, not storage).
 
 **Acceptance — on real phones**
 
