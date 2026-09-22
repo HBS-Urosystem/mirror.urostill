@@ -196,6 +196,7 @@ All strings live in `src/lib/i18n.ts`. British English and Hungarian (formal add
 | errInsecure                        | The camera needs a secure (https) connection.                                                      | A kamerához biztonságos (https) kapcsolat kell.                                                                                           |
 | errUnsupported                     | This browser can't show the camera. Open the page in Safari or Chrome.                             | Ez a böngésző nem tudja megjeleníteni a kamerát. Nyissa meg az oldalt Safariban vagy Chrome-ban.                                          |
 | installHint                        | For a full-screen mirror, add this page to your Home Screen.                                       | Teljes képernyős tükörhöz tegye ki az oldalt a kezdőképernyőre.                                                                           |
+| dismiss                            | Dismiss                                                                                            | Bezárás                                                                                                                                   |
 | lightOff / lightSoft / lightBright | Light: off / soft / bright                                                                         | Fény: ki / halvány / erős                                                                                                                 |
 | zoomReset                          | Zoom {n}×, tap to reset                                                                            | Nagyítás {n}×, koppintson a visszaállításhoz                                                                                              |
 | paused (phase 7)                   | Tracking paused. Move the picture to start again.                                                  | A követés szünetel. Mozgassa a képet az újrainduláshoz.                                                                                   |
@@ -332,7 +333,7 @@ The app runs on phones, tablets, laptops and any computer with a webcam, so ever
 - `event.ctrlKey === true` means a trackpad pinch (macOS and Windows both report it this way). Use the finer factor `WHEEL_PINCH_FACTOR`.
 - Otherwise it is a wheel or two-finger scroll. Zoom with `WHEEL_ZOOM_STEP` per notch; the page has nothing to scroll anyway.
 - `deltaMode` may be lines or pages rather than pixels; normalise before applying.
-- Before the first pan, zoom about the pointer position, exactly as pinch does. After a pan, zoom keeps the view centre fixed (see the crosshair rule in section 1).
+- Zoom about the pointer position, exactly as pinch does, before and after a pan alike (r4 reversed the r3 rule that fixed the view centre after a pan).
 
 **Keyboard (r3).** The stage is focusable (`tabindex="0"`) with a visible focus ring. Keys are listed in `step3Desktop` only at the level a user needs; the full set:
 
@@ -542,10 +543,10 @@ Phases 0–4 were built for touch. This phase makes the app usable on a laptop o
 
 #### New work
 
-- [ ] `Crosshair.svelte` per the specification in section 1, pinned to the stage centre, `aria-hidden`.
-- [ ] Show it on pan and on zoom from any input, hold `CROSSHAIR_HOLD_MS`, fade `CROSSHAIR_FADE_MS`, honour `prefers-reduced-motion`.
-- [ ] Leave zoom behaviour alone: it stays anchored to the pinch or pointer position (r4).
-- [ ] Playwright: a desktop-viewport run of the existing smoke test, plus wheel zoom and arrow-key pan.
+- [x] `Crosshair.svelte` per the specification in section 1, pinned to the stage centre, `aria-hidden`.
+- [x] Show it on pan and on zoom from any input, hold `CROSSHAIR_HOLD_MS`, fade `CROSSHAIR_FADE_MS`, honour `prefers-reduced-motion`.
+- [x] Leave zoom behaviour alone: it stays anchored to the pinch or pointer position (r4).
+- [x] Playwright: a desktop-viewport run of the existing smoke test, plus wheel zoom and arrow-key pan.
 
 **Acceptance**
 
