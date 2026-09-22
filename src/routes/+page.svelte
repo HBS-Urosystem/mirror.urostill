@@ -5,6 +5,7 @@
 	import Intro from '$lib/components/Intro.svelte';
 	import Mirror from '$lib/components/Mirror.svelte';
 	import { pickLang, STRINGS } from '$lib/i18n';
+	import { stayAtBaseResolution } from '$lib/platform';
 	import { wakeLock } from '$lib/wakelock.svelte';
 
 	type Screen = 'intro' | 'starting' | 'live' | 'error' | 'suspended';
@@ -12,6 +13,7 @@
 	const lang = pickLang(navigator.language);
 	const t = STRINGS[lang];
 	const debug = $derived(page.url.searchParams.get('debug') === '1');
+	const stayAt1080 = $derived(stayAtBaseResolution(page.url.searchParams));
 
 	let screen = $state<Screen>('intro');
 	/** Invalidates a start still in flight when the page is hidden or exited. */
@@ -115,7 +117,10 @@
 		wakeLockStatus={wakeLock.status}
 		onexit={exit}
 		onplayfail={onPlayFail}
-		onvideoready={(video) => void camera.improveResolution(video)}
+		onvideoready={(video) => {
+			if (stayAt1080) camera.skipUpgrade();
+			else void camera.improveResolution(video);
+		}}
 	/>
 {:else}
 	<Intro {t} busy={screen === 'starting'} onstart={start} />

@@ -87,3 +87,15 @@ test('the resolution probe runs and the fps guard settles it', async ({ page }) 
 	await expect(page.locator('div', { hasText: /^camera max / }).last()).toContainText('×');
 	await expect(page.locator('div', { hasText: /^fps / }).last()).toContainText('meas');
 });
+
+test('?debug=1&res=1080 stays at the starting resolution', async ({ page }) => {
+	await page.goto('/?debug=1&res=1080');
+	await page.getByRole('button', { name: 'Start mirror' }).click();
+
+	const mode = page.locator('div', { hasText: /^mode / }).last();
+	await expect(mode).toContainText('skipped', { timeout: 15000 });
+	await expect(mode).toContainText('1920×1080');
+
+	// Capabilities are still read, so the card can record what the camera could do.
+	await expect(page.locator('div', { hasText: /^camera max / }).last()).toContainText('×');
+});

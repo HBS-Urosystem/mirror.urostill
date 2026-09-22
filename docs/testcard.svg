@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="210mm" height="297mm" viewBox="0 0 210 297">
+<rect width="210" height="297" fill="#ffffff"/>
+<g fill="#000000">
+<text x="15" y="20" font-family="Arial, Helvetica, sans-serif" font-size="5.587" font-weight="700">Mirror — test card</text>
+<text x="15" y="27" font-family="Arial, Helvetica, sans-serif" font-size="3.073" >Print at 100 % (no “fit to page”). Check the ruler with a real one before using the card.</text>
+<g stroke="#000000" stroke-width="0.25">
+<line x1="15" y1="44" x2="65" y2="44"/>
+<line x1="15" y1="44" x2="15" y2="39"/>
+<line x1="16" y1="44" x2="16" y2="42.4"/>
+<line x1="17" y1="44" x2="17" y2="42.4"/>
+<line x1="18" y1="44" x2="18" y2="42.4"/>
+<line x1="19" y1="44" x2="19" y2="42.4"/>
+<line x1="20" y1="44" x2="20" y2="41"/>
+<line x1="21" y1="44" x2="21" y2="42.4"/>
+<line x1="22" y1="44" x2="22" y2="42.4"/>
+<line x1="23" y1="44" x2="23" y2="42.4"/>
+<line x1="24" y1="44" x2="24" y2="42.4"/>
+<line x1="25" y1="44" x2="25" y2="39"/>
+<line x1="26" y1="44" x2="26" y2="42.4"/>
+<line x1="27" y1="44" x2="27" y2="42.4"/>
+<line x1="28" y1="44" x2="28" y2="42.4"/>
+<line x1="29" y1="44" x2="29" y2="42.4"/>
+<line x1="30" y1="44" x2="30" y2="41"/>
+<line x1="31" y1="44" x2="31" y2="42.4"/>
+<line x1="32" y1="44" x2="32" y2="42.4"/>
+<line x1="33" y1="44" x2="33" y2="42.4"/>
+<line x1="34" y1="44" x2="34" y2="42.4"/>
+<line x1="35" y1="44" x2="35" y2="39"/>
+<line x1="36" y1="44" x2="36" y2="42.4"/>
+<line x1="37" y1="44" x2="37" y2="42.4"/>
+<line x1="38" y1="44" x2="38" y2="42.4"/>
+<line x1="39" y1="44" x2="39" y2="42.4"/>
+<line x1="40" y1="44" x2="40" y2="41"/>
+<line x1="41" y1="44" x2="41" y2="42.4"/>
+<line x1="42" y1="44" x2="42" y2="42.4"/>
+<line x1="43" y1="44" x2="43" y2="42.4"/>
+<line x1="44" y1="44" x2="44" y2="42.4"/>
+<line x1="45" y1="44" x2="45" y2="39"/>
+<line x1="46" y1="44" x2="46" y2="42.4"/>
+<line x1="47" y1="44" x2="47" y2="42.4"/>
+<line x1="48" y1="44" x2="48" y2="42.4"/>
+<line x1="49" y1="44" x2="49" y2="42.4"/>
+<line x1="50" y1="44" x2="50" y2="41"/>
+<line x1="51" y1="44" x2="51" y2="42.4"/>
+<line x1="52" y1="44" x2="52" y2="42.4"/>
+<line x1="53" y1="44" x2="53" y2="42.4"/>
+<line x1="54" y1="44" x2="54" y2="42.4"/>
+<line x1="55" y1="44" x2="55" y2="39"/>
+<line x1="56" y1="44" x2="56" y2="42.4"/>
+<line x1="57" y1="44" x2="57" y2="42.4"/>
+<line x1="58" y1="44" x2="58" y2="42.4"/>
+<line x1="59" y1="44" x2="59" y2="42.4"/>
+<line x1="60" y1="44" x2="60" y2="41"/>
+<line x1="61" y1="44" x2="61" y2="42.4"/>
+<line x1="62" y1="44" x2="62" y2="42.4"/>
+<line x1="63" y1="44" x2="63" y2="42.4"/>
+<line x1="64" y1="44" x2="64" y2="42.4"/>
+<line x1="65" y1="44" x2="65" y2="39"/>
+</g>
+<text x="15" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0</text>
+<text x="25" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">10</text>
+<text x="35" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">20</text>
+<text x="45" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">30</text>
+<text x="55" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">40</text>
+<text x="65" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">50</text>
+<text x="71" y="45" font-family="Arial, Helvetica, sans-serif" font-size="3.073" >50 mm</text>
+<text x="15" y="60" font-family="Arial, Helvetica, sans-serif" font-size="3.911" font-weight="700">Resolution chart</text>
+<text x="15" y="65" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Report the finest group where three separate bars are still visible, in mm.</text>
+<text x="15" y="70" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >vertical bars — horizontal detail</text>
+<rect x="31.125" y="74" width="0.15" height="12"/>
+<rect x="31.425" y="74" width="0.15" height="12"/>
+<rect x="31.725" y="74" width="0.15" height="12"/>
+<text x="31.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.15</text>
+<rect x="52.000" y="74" width="0.2" height="12"/>
+<rect x="52.400" y="74" width="0.2" height="12"/>
+<rect x="52.800" y="74" width="0.2" height="12"/>
+<text x="52.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.20</text>
+<rect x="72.875" y="74" width="0.25" height="12"/>
+<rect x="73.375" y="74" width="0.25" height="12"/>
+<rect x="73.875" y="74" width="0.25" height="12"/>
+<text x="73.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.25</text>
+<rect x="93.750" y="74" width="0.3" height="12"/>
+<rect x="94.350" y="74" width="0.3" height="12"/>
+<rect x="94.950" y="74" width="0.3" height="12"/>
+<text x="94.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.30</text>
+<rect x="114.500" y="74" width="0.4" height="12"/>
+<rect x="115.300" y="74" width="0.4" height="12"/>
+<rect x="116.100" y="74" width="0.4" height="12"/>
+<text x="115.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.40</text>
+<rect x="135.250" y="74" width="0.5" height="12"/>
+<rect x="136.250" y="74" width="0.5" height="12"/>
+<rect x="137.250" y="74" width="0.5" height="12"/>
+<text x="136.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.50</text>
+<rect x="155.625" y="74" width="0.75" height="12"/>
+<rect x="157.125" y="74" width="0.75" height="12"/>
+<rect x="158.625" y="74" width="0.75" height="12"/>
+<text x="157.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.75</text>
+<rect x="176.000" y="74" width="1" height="12"/>
+<rect x="178.000" y="74" width="1" height="12"/>
+<rect x="180.000" y="74" width="1" height="12"/>
+<text x="178.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">1.00</text>
+<text x="15" y="102" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >horizontal bars — vertical detail</text>
+<rect x="25.5" y="111.625" width="12" height="0.15"/>
+<rect x="25.5" y="111.925" width="12" height="0.15"/>
+<rect x="25.5" y="112.225" width="12" height="0.15"/>
+<text x="31.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.15</text>
+<rect x="46.5" y="111.500" width="12" height="0.2"/>
+<rect x="46.5" y="111.900" width="12" height="0.2"/>
+<rect x="46.5" y="112.300" width="12" height="0.2"/>
+<text x="52.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.20</text>
+<rect x="67.5" y="111.375" width="12" height="0.25"/>
+<rect x="67.5" y="111.875" width="12" height="0.25"/>
+<rect x="67.5" y="112.375" width="12" height="0.25"/>
+<text x="73.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.25</text>
+<rect x="88.5" y="111.250" width="12" height="0.3"/>
+<rect x="88.5" y="111.850" width="12" height="0.3"/>
+<rect x="88.5" y="112.450" width="12" height="0.3"/>
+<text x="94.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.30</text>
+<rect x="109.5" y="111.000" width="12" height="0.4"/>
+<rect x="109.5" y="111.800" width="12" height="0.4"/>
+<rect x="109.5" y="112.600" width="12" height="0.4"/>
+<text x="115.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.40</text>
+<rect x="130.5" y="110.750" width="12" height="0.5"/>
+<rect x="130.5" y="111.750" width="12" height="0.5"/>
+<rect x="130.5" y="112.750" width="12" height="0.5"/>
+<text x="136.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.50</text>
+<rect x="151.5" y="110.125" width="12" height="0.75"/>
+<rect x="151.5" y="111.625" width="12" height="0.75"/>
+<rect x="151.5" y="113.125" width="12" height="0.75"/>
+<text x="157.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.75</text>
+<rect x="172.5" y="109.500" width="12" height="1"/>
+<rect x="172.5" y="111.500" width="12" height="1"/>
+<rect x="172.5" y="113.500" width="12" height="1"/>
+<text x="178.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">1.00</text>
+<text x="15" y="140" font-family="Arial, Helvetica, sans-serif" font-size="3.911" font-weight="700">Text</text>
+<text x="15" y="145" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Report the smallest line that can be read without guessing, by its cap height in mm.</text>
+<text x="15" y="156" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.00 mm</text>
+<text x="37" y="156" font-family="Arial, Helvetica, sans-serif" font-size="1.397" >DKNRSVZ 0369</text>
+<text x="15" y="164" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.25 mm</text>
+<text x="37" y="164" font-family="Arial, Helvetica, sans-serif" font-size="1.746" >DKNRSVZ 0369</text>
+<text x="15" y="172.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.50 mm</text>
+<text x="37" y="172.25" font-family="Arial, Helvetica, sans-serif" font-size="2.095" >DKNRSVZ 0369</text>
+<text x="15" y="180.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >2.00 mm</text>
+<text x="37" y="180.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >DKNRSVZ 0369</text>
+<text x="15" y="189.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >2.50 mm</text>
+<text x="37" y="189.75" font-family="Arial, Helvetica, sans-serif" font-size="3.492" >DKNRSVZ 0369</text>
+<text x="15" y="199.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >3.00 mm</text>
+<text x="37" y="199.25" font-family="Arial, Helvetica, sans-serif" font-size="4.190" >DKNRSVZ 0369</text>
+<text x="15" y="209.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >4.00 mm</text>
+<text x="37" y="209.25" font-family="Arial, Helvetica, sans-serif" font-size="5.587" >DKNRSVZ 0369</text>
+<text x="15" y="228.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Keep the card flat and evenly lit. Measure the distance to the camera, not to the screen.</text>
+</g>
+</svg>

@@ -560,12 +560,12 @@ Phases 0–4 were built for touch. This phase makes the app usable on a laptop o
 
 Claude Code prepares; people run the tests.
 
-- [ ] `docs/testcard.svg`, printable at 100 % scale. It lives in `docs/`, not `static/`, so it is not part of the app. Contents:
+- [x] `docs/testcard.svg`, printable at 100 % scale. It lives in `docs/`, not `static/`, so it is not part of the app. Contents:
   - **Resolution chart:** groups of three black bars separated by equal white gaps, at line widths 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75 and 1.0 mm, each group in a horizontal and a vertical version, labelled with its width.
   - Text lines from 1 mm to 4 mm cap height.
   - A 50 mm ruler, to confirm the print scale with a real ruler.
-- [ ] Debug-only switch `?debug=1&res=1080` that skips the resolution upgrade, so both modes can be compared on the same phone.
-- [ ] `TESTING.md` with the protocol and an empty results table. Every resolution-dependent row is filled in twice: at 1080p and at the upgraded mode.
+- [x] Debug-only switch `?debug=1&res=1080` that skips the resolution upgrade, so both modes can be compared on the same phone.
+- [x] `TESTING.md` with the protocol and an empty results table. Every resolution-dependent row is filled in twice: at 1080p and at the upgraded mode.
 
 | Column                                   | How                                                                                                                                       |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |

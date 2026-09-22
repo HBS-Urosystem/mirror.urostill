@@ -20,3 +20,11 @@ export function isStandalone(
 ): boolean {
 	return displayModeStandalone || navigatorStandalone === true;
 }
+
+/**
+ * The 1080p switch is debug-only: a stray `?res=1080` must not change what a
+ * real user sees. Only the pair does anything.
+ */
+export function stayAtBaseResolution(params: URLSearchParams): boolean {
+	return params.get('debug') === '1' && params.get('res') === '1080';
+}

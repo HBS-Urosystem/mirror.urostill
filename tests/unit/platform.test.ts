@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isIos, isStandalone } from '../../src/lib/platform';
+import { isIos, isStandalone, stayAtBaseResolution } from '../../src/lib/platform';
 
 const IPHONE =
 	'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1';
@@ -38,5 +38,25 @@ describe('isStandalone', () => {
 	it('is false in a browser tab', () => {
 		expect(isStandalone(false, false)).toBe(false);
 		expect(isStandalone(false, undefined)).toBe(false);
+	});
+});
+
+describe('stayAtBaseResolution', () => {
+	const ask = (query: string) => stayAtBaseResolution(new URLSearchParams(query));
+
+	it('needs both the debug flag and the switch', () => {
+		expect(ask('debug=1&res=1080')).toBe(true);
+		expect(ask('res=1080&debug=1')).toBe(true);
+	});
+
+	it('ignores the switch on its own, so a shared link cannot change the picture', () => {
+		expect(ask('res=1080')).toBe(false);
+	});
+
+	it('is false for anything else', () => {
+		expect(ask('')).toBe(false);
+		expect(ask('debug=1')).toBe(false);
+		expect(ask('debug=1&res=2160')).toBe(false);
+		expect(ask('debug=0&res=1080')).toBe(false);
 	});
 });

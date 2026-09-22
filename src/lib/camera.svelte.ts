@@ -31,7 +31,7 @@ export function mapCameraError(error: unknown): CameraErrorKey {
  * How the one-off resolution probe went. Reported in the debug overlay so the
  * phase 5 device pass can record it.
  */
-export type UpgradeState = 'idle' | 'probing' | 'upgraded' | 'fellback' | 'unavailable';
+export type UpgradeState = 'idle' | 'probing' | 'upgraded' | 'fellback' | 'unavailable' | 'skipped';
 
 export interface Resolution {
 	width: number;
@@ -205,6 +205,18 @@ export class Camera {
 		await this.#applyBaseResolution(track);
 		this.#session = { width: CAMERA_IDEAL.width, height: CAMERA_IDEAL.height };
 		this.upgradeState = 'fellback';
+	}
+
+	/**
+	 * `?debug=1&res=1080`: stay at the starting resolution for this session, so
+	 * the same phone can be measured in both modes.
+	 */
+	skipUpgrade(): void {
+		if (this.#probed) return;
+		this.#probed = true;
+		this.capabilities = this.track?.getCapabilities?.() ?? null;
+		this.#session = { width: CAMERA_IDEAL.width, height: CAMERA_IDEAL.height };
+		this.upgradeState = 'skipped';
 	}
 
 	async #applyBaseResolution(track: MediaStreamTrack): Promise<void> {
