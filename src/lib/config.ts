@@ -70,3 +70,31 @@ export const DOUBLE_TAP_SLOP_PX = 30;
  * a phone that cannot do 1080p should both still produce a picture.
  */
 export const CAMERA_IDEAL = { width: 1920, height: 1080, frameRate: 30 } as const;
+
+/**
+ * Stabilisation (phase 7). Analysis runs on a small greyscale copy of the
+ * frame; every length here is in analysis pixels unless it says otherwise.
+ */
+export const MOTION_ANALYSIS_WIDTH = 192;
+/** Block side at the finest level, and at the coarser pyramid levels. */
+export const MOTION_BLOCK_PX = 16;
+export const MOTION_COARSE_BLOCK_PX = 8;
+/** 192 → 96 → 48. The coarsest level is what gives the search its reach. */
+export const MOTION_LEVELS = 3;
+/** ±8 at 48 px wide reaches ±32 px at full analysis size. */
+export const MOTION_COARSE_SEARCH_PX = 8;
+/** Each finer level only has to tidy up what the one above it found. */
+export const MOTION_REFINE_SEARCH_PX = 3;
+/**
+ * Take every pixel in a block, or every second one. The spike measured the
+ * cost of each; phase 7b picks from the device numbers.
+ */
+export const MOTION_SAMPLE_STEP = 1;
+/** Below this variance a block has no texture to match and is skipped. */
+export const MOTION_MIN_VARIANCE = 25;
+/** Exclusion disc around the anchor, as a fraction of the short side. */
+export const MOTION_EXCLUSION_FRACTION = 0.22;
+/** A block agrees with the median if it is within this of it. */
+export const MOTION_INLIER_PX = 1.5;
+export const MOTION_MIN_CONFIDENCE = 0.5;
+export const MOTION_MIN_BLOCKS = 8;
