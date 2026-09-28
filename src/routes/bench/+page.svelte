@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { version } from '$app/environment';
 	import { benchSettings, runSetting, type BenchResult } from '$lib/motion/bench';
 
 	// A development instrument. Its words are not product copy, so they do not
@@ -25,7 +26,9 @@
 		running = false;
 	}
 
-	const device = `${navigator.hardwareConcurrency ?? '?'} cores · dpr ${window.devicePixelRatio} · ${navigator.userAgent}`;
+	// Shown because two runs once came back identical: the page had not been
+	// reloaded, so the same code was measured twice.
+	const device = `build ${version} · ${navigator.hardwareConcurrency ?? '?'} cores · dpr ${window.devicePixelRatio} · ${navigator.userAgent}`;
 </script>
 
 <svelte:head><title>Motion bench</title></svelte:head>
