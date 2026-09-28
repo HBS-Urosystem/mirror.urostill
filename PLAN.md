@@ -331,7 +331,7 @@ The app runs on phones, tablets, laptops and any computer with a webcam, so ever
 **Wheel and trackpad (r3).** Register `wheel` on the stage as a non-passive listener and always `preventDefault()`.
 
 - `event.ctrlKey === true` means a trackpad pinch (macOS and Windows both report it this way). Use the finer factor `WHEEL_PINCH_FACTOR`.
-- Otherwise it is a wheel or two-finger scroll. Zoom with `WHEEL_ZOOM_STEP` per notch; the page has nothing to scroll anyway.
+- Otherwise it is a wheel or two-finger scroll. Zoom with `WHEEL_ZOOM_STEP` per notch; the page has nothing to scroll anyway. **A positive `deltaY` magnifies**, which with macOS natural scrolling is a two-finger swipe up the trackpad. That is the opposite of the usual mouse-wheel convention, and was chosen on purpose for the device this is driven with.
 - `deltaMode` may be lines or pages rather than pixels; normalise before applying.
 - Zoom about the pointer position, exactly as pinch does, before and after a pan alike (r4 reversed the r3 rule that fixed the view centre after a pan).
 

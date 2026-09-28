@@ -59,7 +59,14 @@ export function normaliseWheelDelta(
 /**
  * The zoom ratio for one wheel event. `ctrlKey` means a trackpad pinch — both
  * macOS and Windows report it that way — which needs a much finer factor than
- * a mouse wheel's discrete notches. Scrolling up zooms in, as everywhere else.
+ * a mouse wheel's discrete notches, and keeps its own direction: spreading the
+ * fingers magnifies.
+ *
+ * For a plain scroll, a **positive** deltaY magnifies. With macOS natural
+ * scrolling, which is the default, that is a two-finger swipe up the trackpad.
+ * The cost is that a mouse wheel then magnifies when rolled towards the user,
+ * the opposite of the usual convention — the trackpad was chosen over the
+ * convention on purpose, because that is what this is driven with.
  */
 export function wheelZoomRatio(
 	deltaPx: number,
@@ -69,7 +76,7 @@ export function wheelZoomRatio(
 	notchPx = WHEEL_NOTCH_PX
 ): number {
 	if (ctrlKey) return Math.exp(-deltaPx * pinchFactor);
-	return step ** (-deltaPx / notchPx);
+	return step ** (deltaPx / notchPx);
 }
 
 interface Point {

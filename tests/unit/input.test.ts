@@ -22,20 +22,25 @@ describe('normaliseWheelDelta', () => {
 });
 
 describe('wheelZoomRatio', () => {
-	it('zooms in when scrolling up and out when scrolling down', () => {
-		expect(wheelZoomRatio(-WHEEL_NOTCH_PX, false)).toBeGreaterThan(1);
-		expect(wheelZoomRatio(WHEEL_NOTCH_PX, false)).toBeLessThan(1);
+	it('magnifies on a positive delta — a two-finger swipe up on a Mac trackpad', () => {
+		expect(wheelZoomRatio(WHEEL_NOTCH_PX, false)).toBeGreaterThan(1);
+		expect(wheelZoomRatio(-WHEEL_NOTCH_PX, false)).toBeLessThan(1);
 	});
 
 	it('is exactly one step per notch', () => {
-		expect(wheelZoomRatio(-WHEEL_NOTCH_PX, false, 1.15)).toBeCloseTo(1.15, 6);
-		expect(wheelZoomRatio(WHEEL_NOTCH_PX, false, 1.15)).toBeCloseTo(1 / 1.15, 6);
+		expect(wheelZoomRatio(WHEEL_NOTCH_PX, false, 1.15)).toBeCloseTo(1.15, 6);
+		expect(wheelZoomRatio(-WHEEL_NOTCH_PX, false, 1.15)).toBeCloseTo(1 / 1.15, 6);
 	});
 
 	it('composes: two notches are one step squared, so the feel is even', () => {
-		const one = wheelZoomRatio(-WHEEL_NOTCH_PX, false);
-		const two = wheelZoomRatio(-2 * WHEEL_NOTCH_PX, false);
+		const one = wheelZoomRatio(WHEEL_NOTCH_PX, false);
+		const two = wheelZoomRatio(2 * WHEEL_NOTCH_PX, false);
 		expect(two).toBeCloseTo(one * one, 6);
+	});
+
+	it('leaves the trackpad pinch alone: spreading the fingers still magnifies', () => {
+		expect(wheelZoomRatio(-2, true)).toBeGreaterThan(1);
+		expect(wheelZoomRatio(2, true)).toBeLessThan(1);
 	});
 
 	it('does nothing on a zero delta', () => {
@@ -49,7 +54,7 @@ describe('wheelZoomRatio', () => {
 		// trackpad must move far less, or a pinch would fly to the zoom limit.
 		const perPinchEvent = wheelZoomRatio(-2, true);
 		expect(perPinchEvent).toBeGreaterThan(1);
-		expect(perPinchEvent).toBeLessThan(wheelZoomRatio(-WHEEL_NOTCH_PX, false));
+		expect(perPinchEvent).toBeLessThan(wheelZoomRatio(WHEEL_NOTCH_PX, false));
 	});
 
 	it('adds up over a pinch the way the fingers expect', () => {
@@ -61,6 +66,6 @@ describe('wheelZoomRatio', () => {
 
 	it('is symmetric, so a pinch out undoes a pinch in', () => {
 		expect(wheelZoomRatio(-25, true) * wheelZoomRatio(25, true)).toBeCloseTo(1, 10);
-		expect(wheelZoomRatio(-250, false) * wheelZoomRatio(250, false)).toBeCloseTo(1, 10);
+		expect(wheelZoomRatio(250, false) * wheelZoomRatio(-250, false)).toBeCloseTo(1, 10);
 	});
 });

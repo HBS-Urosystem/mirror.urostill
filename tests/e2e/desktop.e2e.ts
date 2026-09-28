@@ -27,7 +27,8 @@ test('the wheel zooms about the pointer, and the crosshair appears', async ({ pa
 
 	const target = { x: before.centre.x + 200, y: before.centre.y };
 	await page.mouse.move(target.x, target.y);
-	await page.mouse.wheel(0, -100);
+	// Positive: a two-finger swipe up a Mac trackpad, which magnifies.
+	await page.mouse.wheel(0, 100);
 
 	await expect.poll(async () => (await view(page)).scale).toBeGreaterThan(1.1);
 	const zoomed = await view(page);
@@ -132,7 +133,7 @@ test.describe('with reduced motion', () => {
 		await expect(crosshair).toHaveCount(0);
 
 		await page.mouse.move(before.centre.x, before.centre.y);
-		await page.mouse.wheel(0, -100);
+		await page.mouse.wheel(0, 100);
 		await expect(crosshair).toBeVisible();
 
 		// It holds, then leaves without a fade.

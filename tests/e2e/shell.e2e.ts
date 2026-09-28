@@ -6,7 +6,11 @@ declare global {
 	}
 }
 
-test('the shell loads with no CSP violation and no cross-origin request', async ({ page }) => {
+test('the shell loads with no CSP violation and no cross-origin request', async ({
+	page,
+	baseURL
+}) => {
+	const own = new URL(baseURL!).origin;
 	await page.addInitScript(() => {
 		window.__cspViolations = [];
 		document.addEventListener('securitypolicyviolation', (event) => {
@@ -23,7 +27,7 @@ test('the shell loads with no CSP violation and no cross-origin request', async 
 	const foreign: string[] = [];
 	page.on('request', (request) => {
 		const url = new URL(request.url());
-		if (url.origin !== 'http://localhost:4173' && url.protocol !== 'data:') {
+		if (url.origin !== own && url.protocol !== 'data:') {
 			foreign.push(request.url());
 		}
 	});
