@@ -161,21 +161,29 @@ function blockCost(
 	if (cx < 0 || cy < 0 || cx + size > current.width || cy + size > current.height) {
 		return Infinity;
 	}
-	// Rounded, so the inner loop stays integer arithmetic. Pixels are whole
-	// numbers, and a brightness correction finer than one of them is not worth
-	// pushing the whole sum into floating point for.
-	const shiftMean = Math.round(
-		areaSum(curIntegrals.sum, curIntegrals.stride, cx, cy, size) / (size * size) - refMean
-	);
+	// `| 0` is not decoration: it tells the engine this is an int32, and with
+	// it the difference, the absolute value and the running total below can all
+	// stay integers. A brightness correction finer than one pixel value would
+	// buy nothing and costs the whole inner loop its type.
+	const shiftMean =
+		Math.round(
+			areaSum(curIntegrals.sum, curIntegrals.stride, cx, cy, size) / (size * size) - refMean
+		) | 0;
 
 	// The means come from the whole block either way, so they stay the better
 	// estimate even when only some of its pixels are compared.
+	//
+	// The absolute value is done with shifts rather than Math.abs so nothing in
+	// here leaves int32: `d >> 31` is -1 for a negative number and 0 otherwise,
+	// and xor-then-subtract turns that into a negation or a no-op.
 	let cost = 0;
 	for (let row = 0; row < size; row += step) {
 		const refRow = (by + row) * reference.width + bx;
 		const curRow = (cy + row) * current.width + cx;
 		for (let column = 0; column < size; column += step) {
-			cost += Math.abs(current.data[curRow + column] - reference.data[refRow + column] - shiftMean);
+			const d = (current.data[curRow + column] - reference.data[refRow + column] - shiftMean) | 0;
+			const sign = d >> 31;
+			cost = (cost + ((d ^ sign) - sign)) | 0;
 		}
 		if (cost >= limit) return cost;
 	}
