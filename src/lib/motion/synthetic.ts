@@ -1,4 +1,8 @@
-import type { GreyFrame } from '../../src/lib/motion/estimate';
+/**
+ * Scenes that never existed, for measuring the estimator against known
+ * answers — in the unit tests, and on a phone from the bench page.
+ */
+import type { GreyFrame } from './estimate';
 
 /** Deterministic, so a failure can be reproduced. */
 export function makeRandom(seed: number): () => number {

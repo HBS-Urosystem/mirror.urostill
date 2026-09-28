@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { MOTION_BLOCK_PX, MOTION_EXCLUSION_FRACTION } from '../../src/lib/config';
 import { downscaleHalf, estimateShift, median } from '../../src/lib/motion/estimate';
-import { coverageOfValidBlocks, occlude, shifted, texture } from './synthetic';
+import { coverageOfValidBlocks, occlude, shifted, texture } from '../../src/lib/motion/synthetic';
 
 const W = 192;
 const H = 144;

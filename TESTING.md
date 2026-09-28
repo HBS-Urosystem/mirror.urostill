@@ -82,6 +82,54 @@ The debug overlay's `mode` row says which one you are in: `upgraded`, `fellback`
 11. **iOS installed app only.** Close it and launch it again. Does it ask for the
     camera every time?
 
+## Motion bench (phase 7b)
+
+`/bench` measures the stabilisation estimator on whatever device opens it. It makes up its own
+frames, so it needs **no camera** — and therefore no secure context. That is the one part of this
+protocol a phone can run over plain HTTP on the local network, with no certificate to trust:
+
+```bash
+npm run dev -- --host
+```
+
+Then open `http://<the Mac's LAN address>:5173/bench` on the phone and press Measure. It takes a
+few seconds on a laptop and longer on a phone. Copy the whole table in.
+
+Read it as: can this device afford the estimator at all, and if so at which setting. The budget is
+4 ms a frame. `Worst` is the largest error among the estimates that would have been accepted, and
+must stay at or under 0.5 px — a setting that is fast and wrong is not a saving.
+
+| Device | Size | Step | Refine | ms  | Worst | Answered |
+| ------ | ---- | ---- | ------ | --- | ----- | -------- |
+|        |      |      |        |     |       |          |
+
+### Already recorded
+
+MacBook Pro 15" 2014 is not the machine below — this is the 2019 development laptop, 4 cores:
+
+| Size    | Step ±Refine | ms   | Worst       |
+| ------- | ------------ | ---- | ----------- |
+| 128×96  | 1 ±2         | 1.31 | **2.05 px** |
+| 128×96  | 1 ±3         | 1.77 | 0.01 px     |
+| 128×96  | 2 ±2         | 0.91 | **2.63 px** |
+| 128×96  | 2 ±3         | 1.08 | 0.03 px     |
+| 192×144 | 2 ±2         | 2.26 | 0.02 px     |
+| 192×144 | 2 ±3         | 3.46 | 0.02 px     |
+| 192×144 | 1 ±3         | 4.32 | 0.01 px     |
+| 256×192 | 2 ±3         | 5.83 | 0.02 px     |
+| 256×192 | 1 ±3         | 9.22 | 0.01 px     |
+
+Two things fall out of it:
+
+- **The fine search cannot be narrowed to ±2 at 128×96.** It is the cheapest setting in the table
+  and it is wrong by two pixels. At that size the coarsest pyramid level is 32×24, which is too
+  little to hand the fine level something a ±2 window can recover. At 192 and above ±2 is fine.
+  There is a unit test holding this down.
+- **192×144 at step 2, ±3 costs 3.46 ms** on this laptop with no accuracy lost. A phone is several
+  times slower, so the phone numbers decide whether the analysis frame has to come down to 128×96
+  — which is affordable, but each analysis pixel then covers more camera pixels, so the
+  stabilisation gets coarser in real terms.
+
 ## Results
 
 | Device, OS, browser, version | Tab or installed | Mode     | Camera max | Native zoom | Mode in use, measured fps | Sharp at 30 / 35 / 45 cm | Finest bar group at 5× (mm, h / v) | Smallest text at 1× / 3× (mm) | src px / device px at 4× | Halo light, room light off / on (1–5) | Wake lock 10 min | Battery drop / warmth | Pill smooth | iOS re-prompt |

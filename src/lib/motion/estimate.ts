@@ -54,6 +54,8 @@ export interface EstimateOptions {
 	prediction?: Shift;
 	/** 1 takes every pixel of a block, 2 every second one in each direction. */
 	sampleStep?: number;
+	/** How far the finest level looks around what the level above it found. */
+	refineSearchPx?: number;
 }
 
 /** Summed areas, for block means and variances in constant time. */
@@ -348,7 +350,9 @@ export function estimateShift(
 			pyramidReference[level],
 			pyramidCurrent[level],
 			level === 0 ? MOTION_BLOCK_PX : MOTION_COARSE_BLOCK_PX,
-			level === coarsest ? MOTION_COARSE_SEARCH_PX : MOTION_REFINE_SEARCH_PX,
+			level === coarsest
+				? MOTION_COARSE_SEARCH_PX
+				: (options.refineSearchPx ?? MOTION_REFINE_SEARCH_PX),
 			carried,
 			options.anchor && { x: options.anchor.x / atLevel, y: options.anchor.y / atLevel },
 			exclusion / atLevel,

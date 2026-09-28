@@ -13,8 +13,11 @@ const CACHE = `mirror-${version}`;
 /**
  * The app's own build output and nothing else — hard rule 2. `prerendered`
  * carries the shell, which the offline navigation fallback needs.
+ *
+ * The bench page is a development instrument, not part of the app, so it does
+ * not take up room in the offline cache.
  */
-const ASSETS = [...build, ...files, ...prerendered];
+const ASSETS = [...build, ...files, ...prerendered.filter((path) => !path.includes('/bench'))];
 const SHELL = `${base}/`;
 
 sw.addEventListener('install', (event) => {

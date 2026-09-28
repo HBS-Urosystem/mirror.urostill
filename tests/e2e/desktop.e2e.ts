@@ -139,3 +139,16 @@ test.describe('with reduced motion', () => {
 		await expect(crosshair).toHaveCount(0, { timeout: 4000 });
 	});
 });
+
+test('the bench page measures the estimator and reports a cost', async ({ page }) => {
+	await page.goto('/bench');
+	await expect(page.getByRole('heading', { level: 1 })).toHaveText('Motion bench');
+
+	await page.getByRole('button', { name: 'Measure' }).click();
+
+	const rows = page.locator('tbody tr');
+	await expect(rows).toHaveCount(12, { timeout: 60000 });
+	// A cost in milliseconds, and an accuracy, for every setting.
+	await expect(rows.first()).toContainText(/\d+\.\d\d/);
+	await expect(rows.last()).toContainText('px');
+});
