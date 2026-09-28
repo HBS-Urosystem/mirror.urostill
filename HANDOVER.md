@@ -1,173 +1,177 @@
-# Mirror — handover for the device test pass
+# Mirror — device tests
 
-**https://testmirror.netlify.app/** · 28 September 2026
+**https://testmirror.netlify.app/**
 
-The MVP is built and deployed. Everything that can be decided at a desk has been;
-what is left needs real phones, a printed card and a dim bathroom.
+Mirror turns a phone into a lighted mirror. It shows the camera live and mirrored,
+lets you zoom and move the picture with your fingers, keeps the screen awake, and
+turns the edge of the screen into a white light frame. It installs to the home
+screen and works without a network.
 
-The app shows the front camera live and mirrored, lets you zoom and move the
-picture, keeps the screen awake, and turns the edge of the screen into a white
-light frame. It runs on phones, tablets and any computer with a webcam, and
-installs to the home screen. Nothing is recorded, saved or sent: there is no
-storage, no analytics, and the only network requests it can make are for its own
-files. The deployed site carries `noindex`, a robots file that disallows
-everything, and no third-party script of any kind.
+The app is built. What is left is finding out how it behaves on real phones, in a
+real bathroom, at a real distance — and a few of those answers decide what we
+change next.
 
-**What is not finished is the deciding, not the building.** Five questions were
-deliberately left to measurement rather than judgement, and this pass answers
-them. A sixth — whether the picture needs stabilising at all — has been deferred
-and is listed here because the tests will tell you more about it than any amount
-of further work would.
+**Please run this on as many phones as you can.** The differences between devices
+are the whole point: a new iPhone passes almost everything, and the settings we
+end up choosing have to work on the cheapest phone in the set, not the best one.
 
-Please read `TESTING.md` for the protocol and the table to fill in. This letter
-is the short version: what to run, what you should see, and what each outcome
-means.
+You will need the printed test card. **Do not photocopy or rescale it** — the
+sizes printed on it are what the measurements mean.
 
-One thing to know before you start: **the numbers matter more than the
-impressions.** Turn on the debug overlay with `?debug=1` and write down what it
-says. Several of the decisions below turn on a single figure.
+## Two links
 
----
+|                                        |                                                  |
+| -------------------------------------- | ------------------------------------------------ |
+| Normal, with the measurements shown    | https://testmirror.netlify.app/?debug=1          |
+| The same, held at the lower resolution | https://testmirror.netlify.app/?debug=1&res=1080 |
 
-## 1. Installing and running offline
+The first is how the app normally runs. The second holds the camera at a lower
+resolution on purpose, so the two can be compared on the same phone.
 
-| Test                                           | What you should see                                   |
-| ---------------------------------------------- | ----------------------------------------------------- |
-| Add to Home Screen on iOS, install on Android  | An icon: a white ring on a dark green square          |
-| Launch it from the home screen                 | Full screen, no browser bar. The install hint is gone |
-| Turn on airplane mode, launch again            | The intro loads. The camera works                     |
-| **Landscape, launched from the home screen**   | **Does the picture reach both side edges?**           |
-| Close and relaunch on iOS, three or four times | Does it ask for the camera every single time?         |
-
-The landscape one is an open question, not a check. In a Safari **tab** the
-picture stops about 59 pt short of each edge, because Safari gives the page the
-safe area rather than the screen and nothing inside the page can paint into the
-rest. Whether an installed app gets the whole screen is exactly what nobody has
-been able to test until now.
-
-## 2. The resolution upgrade
-
-The app starts at 1080p and then asks the camera for everything it has, keeping
-the result only if the frames keep arriving. Open `?debug=1` and read four rows.
-
-| Row                  | What it means                                                                         |
-| -------------------- | ------------------------------------------------------------------------------------- |
-| `camera max`         | What the camera says it can do                                                        |
-| `mode`               | What it settled on, and how: `upgraded`, `fellback`, `unavailable`                    |
-| `fps`                | Frames counted, beside the rate the browser claims                                    |
-| `src px / device px` | Camera pixels per screen pixel. Below 1 the picture is being enlarged past the sensor |
-
-On an iPhone 14 Pro this gave 4032×3024, upgraded, 30 fps, and **2.1× more real
-detail** than 1080p. A 2014 laptop webcam gave 1280×720 and `unavailable`, which
-is correct — there was nothing to upgrade to.
-
-Watch for a flicker one to three seconds after starting. There was none on the
-iPhone. If a phone flickers, say so.
-
-## 3. The printed card
-
-Print `docs/testcard.svg` at 100 %, with "fit to page" off, then **hold a real
-ruler against the printed one**. Nought to fifty must be fifty millimetres. If it
-is not, nothing else on the card means anything — this is not a formality, the
-first attempt at it came out 14 % small.
-
-Card on a stand, evenly lit, measured from the card to the camera.
-
-| Test                                            | Why                                                                |
-| ----------------------------------------------- | ------------------------------------------------------------------ |
-| Sharp at 30, 35 and 45 cm?                      | Many front cameras are fixed-focus; expect a range, not a point    |
-| Finest bar group still showing three bars at 5× | What the camera actually resolves, in mm, with your eyes out of it |
-| Smallest readable text at 1× and at 3×          | What a person can actually read                                    |
-| `src px / device px` at 4×                      | The same thing as a number                                         |
-
-Do these **twice**: once normally, and once at `?debug=1&res=1080`, which holds
-the camera at 1080p. The comparison is the point, not either figure alone.
-
-## 4. Light, heat and endurance
-
-| Test                                         | What to record                                                         |
-| -------------------------------------------- | ---------------------------------------------------------------------- |
-| Dim bathroom, card at 35 cm, light at bright | Is there enough light to see by? 1–5, with the room light off, then on |
-| Leave it untouched for ten minutes           | Does the screen stay on? Does the overlay still say `wake lock held`?  |
-| After those ten minutes                      | Battery percentage dropped, and whether the phone is warm              |
-| Move the picture with the controls up        | Does the glass pill stay smooth over live video?                       |
-
-Do the heat and battery test at the upgraded resolution, which is the worst case.
-
-## 5. How much does the picture drift?
-
-This one is new, and it decides whether a whole phase is worth building.
-
-Put a phone on a stand at 35 cm, zoom to about 3×, and **leave it alone for a
-minute**. Then nudge the stand by a centimetre or two and watch.
-
-- Does the picture wander on its own while nothing is touched?
-- After a nudge, how far off is it, and is that annoying or merely noticeable?
-- With a hand held in the middle of the picture, does anything change?
-
-Stabilisation — software that would hold the chosen point in the middle — was
-built as far as proving it works, measured, and then deferred. It is accurate,
-but it costs 13 ms a frame on a flagship phone against a 4 ms budget, and no
-arrangement of its settings reaches that. Before spending more on it, it is worth
-knowing whether the drift it fixes is a real problem on a stand.
-
-## 6. On a laptop
-
-| Test                                    | What you should see                                                |
-| --------------------------------------- | ------------------------------------------------------------------ |
-| Two-finger pinch on the trackpad        | Spreading the fingers magnifies, smoothly                          |
-| Two-finger **swipe up** on the trackpad | Magnifies. Note: with a mouse wheel this means rolling towards you |
-| Press and drag                          | The picture follows the pointer; the cursor is a grabbing hand     |
-| Tab to the picture                      | A white focus ring appears around it                               |
-| Arrow keys, `+`, `-`, `0`               | Move, zoom, zoom, reset                                            |
-| `Escape`                                | Leaves full screen first, then leaves the mirror on a second press |
-| More than one camera on the machine?    | Which one does it choose?                                          |
-
-## 7. Large text
-
-In the system settings, set the text size to its maximum and open the intro. The
-app opts in to system text scaling deliberately, because it exists to help people
-see. Nothing should overlap or run off the screen.
+**Write the numbers down.** Several of the decisions below turn on a single
+figure, and an impression of "looked fine" cannot settle them.
 
 ---
 
-## What each outcome decides
+## 1. Start it
 
-| If the tests show                                                                        | Then                                                                                    |
-| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| The upgrade holds at 24 fps or better on every phone, with no flicker and no heat        | Keep it as it is                                                                        |
-| It holds but the phone gets noticeably warm                                              | Lower `RES_MAX_LONG_SIDE` from 3840, or drop the upgrade                                |
-| It falls back on several phones                                                          | Find the frame rate it fell back at; the floor may be in the wrong place                |
-| 4× and 5× are still readable after the upgrade                                           | Leave `ZOOM_MAX` at 5                                                                   |
-| 5× is useless mush, 3× is the limit                                                      | Lower `ZOOM_MAX` to 3 or 4                                                              |
-| Some phone shows a `native zoom` range **and** the bar groups at 5× are still too coarse | Run the native zoom spike — it crops at the sensor and would be genuinely sharper       |
-| Either of those is missing                                                               | Do not run it                                                                           |
-| The screen alone lights the subject adequately at 35 cm                                  | The app is enough                                                                       |
-| It does not, even at bright                                                              | The lit cradle moves up the list, and is hardware rather than software                  |
-| A test machine has several cameras and the wrong one is picked                           | Add a camera chooser to the control pill                                                |
-| Only one camera anywhere, or the right one is always chosen                              | Leave it out                                                                            |
-| The picture drifts enough to be a nuisance on a stand                                    | Stabilisation is worth reconsidering, and the estimator is written and waiting          |
-| It sits still on a stand                                                                 | Leave it deferred. It would cost battery and heat to solve a problem that is not there  |
-| Landscape, installed, still stops short of the edges                                     | It is Safari, not the app. Worth knowing, nothing to fix                                |
-| The camera asks for permission on every iOS launch                                       | Record it. It is an iOS behaviour, but it affects whether this is pleasant to use daily |
+Open the first link and tap **Start mirror**.
+
+One thing to watch for: a second or two after the picture appears, the app asks
+the camera for a better quality setting. On the phones tried so far this is
+invisible. **If you see the picture flicker, jump or freeze, please say so** —
+which phone, and what it looked like.
+
+Then write down four lines from the panel in the corner:
+
+| Line          | What it is                                                |
+| ------------- | --------------------------------------------------------- |
+| `camera max`  | The best the camera can do                                |
+| `mode`        | What the app settled on                                   |
+| `fps`         | Frames actually arriving, next to what the camera claims  |
+| `native zoom` | Whether this camera can zoom by itself, or says `no zoom` |
+
+## 2. The card: what the camera can resolve
+
+Stand the card upright, lit evenly, no glare. **Measure from the card to the
+camera, not to the screen.**
+
+| Test                                                              | How                                                                                          |
+| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Is it sharp at 30, 35 and 45 cm?                                  | Many front cameras cannot focus, so expect a range rather than a point                       |
+| The finest bar group still showing three separate bars at 5× zoom | Card at 35 cm. Record it in mm                                                               |
+| The smallest line of text you can read without guessing           | Card at 35 cm, at 1× and again at 3×. Record the mm beside the line                          |
+| `src px / device px` at 4×                                        | From the panel. Below 1 means the picture is being enlarged past what the camera really sees |
+
+**Now do the same four with the second link**, which holds the phone at the lower
+resolution.
+
+That comparison is the point of this section: it tells us whether asking the
+camera for better quality actually buys visible detail on this phone. If it does
+not, we can stop asking for it and give the battery back.
+
+## 3. Light
+
+In a dim bathroom, card at 35 cm, the mirror light at its widest setting.
+
+|                                  | 1          | 2      | 3      |
+| -------------------------------- | ---------- | ------ | ------ |
+| Is there enough light to see by? | not enough | usable | plenty |
+
+Score it twice: once with the room light off, once with it on.
+
+## 4. Ten minutes
+
+Start the mirror and leave the phone alone for ten minutes.
+
+- Does the screen stay on the whole time?
+- Does the panel still say `wake lock held` at the end?
+- How much battery did it use?
+- Is the phone warm? Warm is expected — hot is worth telling us about.
+
+While the controls are on screen, move and zoom the picture with your fingers and
+watch the little dark bar at the bottom. Does it stay smooth over the moving
+picture, or does it stutter?
+
+## 5. Does the picture stay still?
+
+Put the phone on a stand at 35 cm and zoom to about 3×.
+
+- **Leave it alone for a minute.** Does the picture drift on its own?
+- **Nudge the stand** by a centimetre. How far off does the picture end up, and is
+  that annoying or just noticeable?
+- **Hold a hand in the middle of the picture.** Does anything change?
+
+This decides whether it is worth writing image stabilisation — software that
+would hold the chosen point in the middle by itself. It is a real piece of work
+and it costs battery, so it is only worth doing if the picture actually moves
+enough to bother someone.
 
 ---
 
-## Minimum devices
+## Where to write it down
 
-A recent iPhone · an older iPhone on iOS 16.4–17 · a mid-range Samsung · a
-low-cost Android · at least one laptop with a webcam.
+One of these per phone. Copy the block as many times as you need.
 
-**The worst device decides the settings, not the best.** A flagship will pass
-almost everything here.
+|                                                       |     |
+| ----------------------------------------------------- | --- |
+| **Phone, and which iOS or Android**                   |     |
+| `camera max`                                          |     |
+| `mode`                                                |     |
+| `fps`                                                 |     |
+| `native zoom`                                         |     |
+| Any flicker at the start?                             |     |
+| Sharp at 30 / 35 / 45 cm                              |     |
+| Finest bars at 5×, normal (mm)                        |     |
+| Finest bars at 5×, lower resolution (mm)              |     |
+| Smallest text at 1× / 3×, normal (mm)                 |     |
+| Smallest text at 1× / 3×, lower resolution (mm)       |     |
+| `src px / device px` at 4×, normal                    |     |
+| `src px / device px` at 4×, lower resolution          |     |
+| Light in the dark, room light off / on (1–3)          |     |
+| Screen stayed on ten minutes? `wake lock` at the end? |     |
+| Battery used, and was it warm?                        |     |
+| Did the control bar stay smooth?                      |     |
+| Drift: left alone a minute                            |     |
+| Drift: after a nudge                                  |     |
+| Anything else you noticed                             |     |
 
-Android needs a protocol of its own and has not been written: Chrome exposes
-camera capabilities Safari does not, and the cheap devices are where the frame
-rate guard and the heat budget will actually bite. Please do not fold it into the
-iOS runs — flag it and we will write it properly.
+---
 
-## Still open, and not yours to solve
+## What your answers decide
 
-- The name, the branding, and whether any company name appears.
-- `ZOOM_MAX`, pending the above.
-- Whether Hungarian stays in the formal register. It currently does.
+| If you find                                                                     | Then                                                                           |
+| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| The quality upgrade holds on every phone, no flicker, no unusual heat           | Keep it as it is                                                               |
+| It holds, but the phone gets noticeably hot                                     | We lower the ceiling, or stop asking for the upgrade                           |
+| It gives up on several phones                                                   | We find the frame rate it gave up at — our threshold may be in the wrong place |
+| The higher quality setting shows visibly finer bars or smaller text             | Worth keeping                                                                  |
+| The two settings look the same on the card                                      | Drop it and save the battery                                                   |
+| 4× and 5× are still readable                                                    | Leave the zoom range as it is                                                  |
+| 5× is mush and 3× is the honest limit                                           | Lower the maximum zoom to 3 or 4                                               |
+| A phone shows a `native zoom` range **and** the bars at 5× are still too coarse | Worth trying the camera's own zoom, which is genuinely sharper                 |
+| Either of those is missing                                                      | Not worth it                                                                   |
+| The screen alone lights the subject well enough at 35 cm                        | The app is enough on its own                                                   |
+| It does not, even at the widest setting                                         | A lit stand moves up the list — that is hardware, not software                 |
+| The picture drifts enough to be a nuisance on a stand                           | Stabilisation is worth writing                                                 |
+| It sits still                                                                   | Leave it. It would cost battery to solve a problem that is not there           |
+
+## Which phones
+
+A recent iPhone · an older iPhone · a mid-range Samsung · a cheap Android.
+
+If you only have time for two, make one of them the cheapest phone you can find.
+
+**Android may behave differently enough to need its own round.** Chrome gives the
+app camera controls that Safari does not, and cheap Android phones are where the
+frame rate and the heat will show first. If Android looks unlike the iPhones,
+tell us rather than working around it — we will write a proper protocol for it.
+
+## Still being decided
+
+These are open, and your experience with the app counts towards them as much as
+anyone's:
+
+- The name and the branding.
+- The maximum zoom, pending the card results.
+- Whether the Hungarian text stays in the formal register. It currently does.
