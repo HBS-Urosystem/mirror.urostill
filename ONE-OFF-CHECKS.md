@@ -61,7 +61,9 @@ takes what it is given.
 
 **If it picks the wrong one, we add a camera chooser to the controls. If there is
 only ever one camera, or the right one is always chosen, we leave it out** —
-every control on that bar is one more thing to explain.
+the
+control bar has three buttons on it, and a fourth that most people never need
+makes the other three harder to find.
 
 ## 5. Large text
 

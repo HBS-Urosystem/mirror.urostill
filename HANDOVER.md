@@ -12,8 +12,8 @@ real bathroom, at a real distance — and a few of those answers decide what we
 change next.
 
 **Please run this on as many phones as you can.** The differences between devices
-are the whole point: a new iPhone passes almost everything, and the settings we
-end up choosing have to work on the cheapest phone in the set, not the best one.
+are what we need: a new iPhone passes almost everything, and whatever we settle
+on has to work on the cheapest phone in the set, not the best one.
 
 You will need the printed test card. **Do not photocopy or rescale it** — the
 sizes printed on it are what the measurements mean.
@@ -66,9 +66,10 @@ camera, not to the screen.**
 **Now do the same four with the second link**, which holds the phone at the lower
 resolution.
 
-That comparison is the point of this section: it tells us whether asking the
-camera for better quality actually buys visible detail on this phone. If it does
-not, we can stop asking for it and give the battery back.
+This comparison answers one question: does the better camera setting show you
+finer bars and smaller text than the lower one on this phone? If it does not,
+there is no reason to use it, and we would switch it off — a bigger picture from
+the camera uses more power and makes the phone warmer for nothing.
 
 ## 3. Light
 
@@ -103,9 +104,9 @@ Put the phone on a stand at 35 cm and zoom to about 3×.
 - **Hold a hand in the middle of the picture.** Does anything change?
 
 This decides whether it is worth writing image stabilisation — software that
-would hold the chosen point in the middle by itself. It is a real piece of work
-and it costs battery, so it is only worth doing if the picture actually moves
-enough to bother someone.
+would hold the chosen point in the middle by itself. It would run constantly
+while the mirror is on, so it would shorten the battery and warm the phone. That
+is only a fair trade if the picture moves enough to bother someone.
 
 ---
 
@@ -140,21 +141,21 @@ One of these per phone. Copy the block as many times as you need.
 
 ## What your answers decide
 
-| If you find                                                                     | Then                                                                           |
-| ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| The quality upgrade holds on every phone, no flicker, no unusual heat           | Keep it as it is                                                               |
-| It holds, but the phone gets noticeably hot                                     | We lower the ceiling, or stop asking for the upgrade                           |
-| It gives up on several phones                                                   | We find the frame rate it gave up at — our threshold may be in the wrong place |
-| The higher quality setting shows visibly finer bars or smaller text             | Worth keeping                                                                  |
-| The two settings look the same on the card                                      | Drop it and save the battery                                                   |
-| 4× and 5× are still readable                                                    | Leave the zoom range as it is                                                  |
-| 5× is mush and 3× is the honest limit                                           | Lower the maximum zoom to 3 or 4                                               |
-| A phone shows a `native zoom` range **and** the bars at 5× are still too coarse | Worth trying the camera's own zoom, which is genuinely sharper                 |
-| Either of those is missing                                                      | Not worth it                                                                   |
-| The screen alone lights the subject well enough at 35 cm                        | The app is enough on its own                                                   |
-| It does not, even at the widest setting                                         | A lit stand moves up the list — that is hardware, not software                 |
-| The picture drifts enough to be a nuisance on a stand                           | Stabilisation is worth writing                                                 |
-| It sits still                                                                   | Leave it. It would cost battery to solve a problem that is not there           |
+| If you find                                                                     | Then                                                                                                                               |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| The quality upgrade holds on every phone, no flicker, no unusual heat           | Keep it as it is                                                                                                                   |
+| It holds, but the phone gets noticeably hot                                     | We lower the ceiling, or stop asking for the upgrade                                                                               |
+| It gives up on several phones                                                   | We find the frame rate it gave up at — our threshold may be in the wrong place                                                     |
+| The higher quality setting shows visibly finer bars or smaller text             | Worth keeping                                                                                                                      |
+| The two settings look the same on the card                                      | Switch the better setting off: it costs power and warmth for no visible gain                                                       |
+| 4× and 5× are still readable                                                    | Leave the zoom range as it is                                                                                                      |
+| 5× is too blurred to read, and 3× is as far as it stays useful                  | Lower the maximum zoom to 3 or 4                                                                                                   |
+| A phone shows a `native zoom` range **and** the bars at 5× are still too coarse | Worth trying the camera's own zoom, which is genuinely sharper                                                                     |
+| Either of those is missing                                                      | Not worth it                                                                                                                       |
+| The screen alone lights the subject well enough at 35 cm                        | The app is enough on its own                                                                                                       |
+| It does not, even at the widest setting                                         | The screen cannot do this alone; a stand with its own light becomes the answer, and that is something to build rather than program |
+| The picture drifts enough to be a nuisance on a stand                           | Stabilisation is worth writing                                                                                                     |
+| It sits still                                                                   | Leave it alone. It would shorten the battery to fix something that is not happening                                                |
 
 ## Which phones
 
