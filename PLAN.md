@@ -682,6 +682,30 @@ crosshair position:            p_A = s · c_A + t
 
 ### Phase 7 — Stabilisation
 
+> **Deferred, 2026-09-28.** Not abandoned and not blocked on anything: the measurements say it
+> costs more than the phone has, and the question it answers has not been asked yet.
+>
+> On an iPhone 14 Pro — a flagship, no Low Power Mode, production build — the cheapest setting
+> that is still accurate costs **13.3 ms a frame** against a 4 ms budget. Measured by pyramid
+> level, 54–59 % of that is the finest level, which is where the blocks that vote live. Halving
+> them saves about 17 % and halves the margin the occlusion defence works with. And if those
+> blocks were free, the phone would still be at 5.4 ms. No arrangement of the levers reaches the
+> budget, which is why tuning stopped.
+>
+> **The reason to wait, though, is not the cost.** Phase 5 has not run, so nobody has measured how
+> much the picture actually drifts on a stand at 35 cm. Until that is known, this is a solution
+> being optimised ahead of its problem.
+>
+> **What is already built and stays:** `estimate.ts`, proven to 100 % within 0.5 analysis px over
+> 65 shifts and never dragged by a hand crossing the frame; the synthetic frames it is tested
+> with; and `/bench`, which measures the cost on any device that opens it and needs no camera.
+> Picking this up again starts from a working estimator and an instrument, not from nothing.
+>
+> **What would change the decision:** phase 5 showing real drift that matters, plus either a
+> tolerable answer on heat and battery at 10–15 Hz on a worker, or a gradient-based estimator —
+> which is cheaper per frame but computes one global motion, so the median-of-blocks defence
+> described below would have to be rebuilt with robust weighting instead.
+
 **What it does:** keeps the anchor — the content point at the stage centre, from phase 6 — in the centre when the camera is nudged or the person shifts, by measuring how the whole scene moved and moving the crop with it.
 
 **The central design point:** the user's hand and whatever they are holding will move right through the middle of the picture. A naive tracker that follows the patch around the anchor will latch onto the hand and drag the view away. So this is not object tracking. It estimates the **global** shift of the scene from blocks spread across the frame, **excludes a disc around the anchor**, and takes the **median**, so a hand moving through the frame is outvoted.
