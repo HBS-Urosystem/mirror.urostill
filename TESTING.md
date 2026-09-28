@@ -105,30 +105,45 @@ must stay at or under 0.5 px — a setting that is fast and wrong is not a savin
 
 ### Already recorded
 
-MacBook Pro 15" 2014 is not the machine below — this is the 2019 development laptop, 4 cores:
+**iPhone 14 Pro, iOS 26, Safari, over plain HTTP on the LAN.** Every setting is over the 4 ms
+budget, the cheapest accurate one by 3.4×:
 
-| Size    | Step ±Refine | ms   | Worst       |
-| ------- | ------------ | ---- | ----------- |
-| 128×96  | 1 ±2         | 1.31 | **2.05 px** |
-| 128×96  | 1 ±3         | 1.77 | 0.01 px     |
-| 128×96  | 2 ±2         | 0.91 | **2.63 px** |
-| 128×96  | 2 ±3         | 1.08 | 0.03 px     |
-| 192×144 | 2 ±2         | 2.26 | 0.02 px     |
-| 192×144 | 2 ±3         | 3.46 | 0.02 px     |
-| 192×144 | 1 ±3         | 4.32 | 0.01 px     |
-| 256×192 | 2 ±3         | 5.83 | 0.02 px     |
-| 256×192 | 1 ±3         | 9.22 | 0.01 px     |
+| Size    | Step ±Refine | ms        | Worst   |
+| ------- | ------------ | --------- | ------- |
+| 128×96  | 2 ±3         | **13.50** | 0.03 px |
+| 128×96  | 1 ±3         | 25.33     | 0.01 px |
+| 192×144 | 2 ±2         | 24.29     | 0.02 px |
+| 192×144 | 2 ±3         | 32.20     | 0.02 px |
+| 192×144 | 1 ±3         | 60.33     | 0.01 px |
+| 256×192 | 2 ±3         | 62.00     | 0.02 px |
+| 256×192 | 1 ±3         | 114.00    | 0.01 px |
 
-Two things fall out of it:
+The ±2 rows at 128×96 are fast and wrong, exactly as on the laptop — 2.05 and 2.63 px.
 
-- **The fine search cannot be narrowed to ±2 at 128×96.** It is the cheapest setting in the table
-  and it is wrong by two pixels. At that size the coarsest pyramid level is 32×24, which is too
-  little to hand the fine level something a ±2 window can recover. At 192 and above ±2 is fine.
-  There is a unit test holding this down.
-- **192×144 at step 2, ±3 costs 3.46 ms** on this laptop with no accuracy lost. A phone is several
-  times slower, so the phone numbers decide whether the analysis frame has to come down to 128×96
-  — which is affordable, but each analysis pixel then covers more camera pixels, so the
-  stabilisation gets coarser in real terms.
+Two things to check before treating these as final:
+
+- **Was Low Power Mode on?** The phone came out about twelve times slower than the 2019 laptop for
+  the same setting, which is not what an A16 should do for plain arithmetic. If it was throttled,
+  these numbers are pessimistic.
+- **The dev server was serving unbundled modules.** Worth one run against `npm run preview`, or a
+  deploy preview, to see whether it differs.
+
+**2019 development laptop, 4 cores, Chrome.** After the inner loop was made integer-only, the
+clean measurement in Node went from 10.77 to 5.98 ms at 192×144 step 1, and 6.26 to 3.73 at
+step 2 — about 1.8×, with no accuracy lost. In the browser, on a machine also running a dev
+server, the figures are higher and only comparable within one run:
+
+| Size    | Step ±Refine | ms   | Worst                   |
+| ------- | ------------ | ---- | ----------------------- |
+| 128×96  | 2 ±2         | 1.04 | 0.03 px (88 % answered) |
+| 128×96  | 2 ±3         | 1.37 | 0.03 px                 |
+| 128×96  | 1 ±3         | 2.28 | 0.01 px                 |
+| 192×144 | 2 ±2         | 2.62 | 0.01 px                 |
+| 192×144 | 2 ±3         | 3.49 | 0.01 px                 |
+| 256×192 | 2 ±3         | 8.08 | 0.02 px                 |
+
+Close other applications before measuring a phone. The bench takes the lowest of three passes,
+which removes most of the contamination, but not all of it.
 
 ## Results
 

@@ -62,12 +62,12 @@ export function benchSettings(): BenchSetting[] {
  * One setting, measured. Accuracy first, so a cheaper setting cannot look
  * good by being wrong, then timing on a frame it has already seen.
  *
- * Timing runs for a fixed stretch rather than a fixed count: a phone and a
- * laptop are an order of magnitude apart, and a count that gives one a steady
- * figure gives the other noise. A first attempt with 15 runs reported a
- * narrower search as slower than a wider one, which is not possible.
+ * Timing runs for a fixed stretch rather than a fixed count, three times over,
+ * keeping the lowest: a phone and a laptop are an order of magnitude apart, so
+ * a fixed count that steadies one leaves the other noisy, and whatever else the
+ * machine is doing can only ever add time.
  */
-export function runSetting(setting: BenchSetting, minimumMs = 150): BenchResult {
+export function runSetting(setting: BenchSetting, minimumMs = 120): BenchResult {
 	const { width, height, sampleStep, refineSearchPx } = setting;
 	const anchor = { x: width / 2, y: height / 2 };
 	const options = { anchor, sampleStep, refineSearchPx };
@@ -95,13 +95,20 @@ export function runSetting(setting: BenchSetting, minimumMs = 150): BenchResult 
 	const warm = frames[0];
 	for (let i = 0; i < 5; i++) estimateShift(warm.reference, warm.current, options);
 
-	const started = performance.now();
-	let runs = 0;
-	do {
-		estimateShift(warm.reference, warm.current, options);
-		runs++;
-	} while (performance.now() - started < minimumMs);
-	const msPerFrame = (performance.now() - started) / runs;
+	// Best of three. Anything else running on the machine can only make a pass
+	// slower, never faster, so the lowest figure is the one least contaminated
+	// by it — the first version reported a narrower search as more expensive
+	// than a wider one simply because something else ran during that pass.
+	let msPerFrame = Infinity;
+	for (let pass = 0; pass < 3; pass++) {
+		const started = performance.now();
+		let runs = 0;
+		do {
+			estimateShift(warm.reference, warm.current, options);
+			runs++;
+		} while (performance.now() - started < minimumMs);
+		msPerFrame = Math.min(msPerFrame, (performance.now() - started) / runs);
+	}
 
 	return {
 		...setting,

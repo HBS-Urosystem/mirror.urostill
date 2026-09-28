@@ -161,8 +161,12 @@ function blockCost(
 	if (cx < 0 || cy < 0 || cx + size > current.width || cy + size > current.height) {
 		return Infinity;
 	}
-	const shiftMean =
-		areaSum(curIntegrals.sum, curIntegrals.stride, cx, cy, size) / (size * size) - refMean;
+	// Rounded, so the inner loop stays integer arithmetic. Pixels are whole
+	// numbers, and a brightness correction finer than one of them is not worth
+	// pushing the whole sum into floating point for.
+	const shiftMean = Math.round(
+		areaSum(curIntegrals.sum, curIntegrals.stride, cx, cy, size) / (size * size) - refMean
+	);
 
 	// The means come from the whole block either way, so they stay the better
 	// estimate even when only some of its pixels are compared.
