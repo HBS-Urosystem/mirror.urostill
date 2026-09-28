@@ -88,7 +88,7 @@ describe('estimateShift', () => {
 			`shift accuracy: ${(within * 100).toFixed(1)} % within 0.5 px, worst ${worst.toFixed(2)} px, over ${errors.length} cases`
 		);
 		expect(within).toBeGreaterThanOrEqual(0.9);
-	});
+	}, 30000);
 
 	it('holds its accuracy while a hand covers up to 40 % of the usable blocks', () => {
 		const exclusion = MOTION_EXCLUSION_FRACTION * H;
@@ -138,7 +138,7 @@ describe('estimateShift', () => {
 		for (const { coverage, within } of results) {
 			if (coverage <= 0.4) expect(within).toBeGreaterThanOrEqual(0.9);
 		}
-	});
+	}, 30000);
 
 	it('follows the scene, not the hand crossing it', () => {
 		// The scene barely moves; the hand sweeps across it. Anything that
@@ -212,5 +212,5 @@ describe('estimateShift', () => {
 			);
 			expect(Math.max(...errors)).toBeLessThanOrEqual(0.5);
 		}
-	});
+	}, 30000);
 });

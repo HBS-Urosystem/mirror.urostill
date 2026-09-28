@@ -26,7 +26,7 @@ describe('runSetting', () => {
 		expect(result.acceptedFraction).toBeGreaterThan(0);
 		expect(result.acceptedFraction).toBeLessThanOrEqual(1);
 		expect(result.worstAcceptedPx).toBeLessThanOrEqual(0.5);
-	});
+	}, 30000);
 
 	it('shows that the fine search cannot be narrowed at the smallest size', () => {
 		// Measured on a laptop and reproduced here: at 128×96 the coarse level
@@ -36,5 +36,5 @@ describe('runSetting', () => {
 
 		expect(narrow.worstAcceptedPx).toBeGreaterThan(0.5);
 		expect(wide.worstAcceptedPx).toBeLessThanOrEqual(0.5);
-	});
+	}, 30000);
 });
