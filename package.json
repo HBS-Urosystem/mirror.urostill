@@ -16,7 +16,8 @@
 		"format": "prettier --write .",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:e2e": "playwright install chromium && playwright test"
+		"test:e2e": "playwright install chromium && playwright test",
+		"preview:lan": "npm run build && vite preview --host --port 4173"
 	},
 	"devDependencies": {
 		"@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",

@@ -5,5 +5,15 @@
   X-Content-Type-Options: nosniff
   X-Robots-Tag: noindex, nofollow
 
+# The HTML names the hashed chunks it needs, and a deploy replaces them. A
+# cached page would ask for files that no longer exist and render nothing at
+# all, so the entry pages are always revalidated. The hashed assets under
+# /_app/immutable/ keep their own long cache: their names change instead.
+/
+  Cache-Control: no-cache
+
+/bench
+  Cache-Control: no-cache
+
 /service-worker.js
   Cache-Control: no-cache
