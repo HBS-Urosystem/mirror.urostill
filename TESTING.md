@@ -105,8 +105,40 @@ must stay at or under 0.5 px — a setting that is fast and wrong is not a savin
 
 ### Already recorded
 
-**iPhone 14 Pro, iOS 26, Safari, over plain HTTP on the LAN.** Every setting is over the 4 ms
-budget, the cheapest accurate one by 3.4×:
+**iPhone 14 Pro, iOS 26, Safari, over plain HTTP on the LAN, production build, no Low Power
+Mode.** Every setting is over the 4 ms budget, the cheapest accurate one by 3.3×. The figures
+below are after the inner loop was made integer-only; the column beside them is before.
+
+| Size    | Step ±Refine | ms        | Before | Worst                   |
+| ------- | ------------ | --------- | ------ | ----------------------- |
+| 128×96  | 2 ±3         | **13.33** | 14.44  | 0.03 px                 |
+| 128×96  | 2 ±2         | 10.17     | 10.91  | 0.03 px (88 % answered) |
+| 128×96  | 1 ±3         | 24.20     | 26.40  | 0.01 px                 |
+| 192×144 | 2 ±2         | 24.00     | 25.80  | 0.01 px                 |
+| 192×144 | 2 ±3         | 31.50     | 34.25  | 0.01 px                 |
+| 192×144 | 1 ±3         | 57.00     | 62.00  | 0.01 px                 |
+| 256×192 | 2 ±3         | 61.00     | 67.00  | 0.02 px                 |
+| 256×192 | 1 ±3         | 109.50    | 121.00 | 0.01 px                 |
+
+**The optimisation that bought 1.5× on V8 bought 8 % here.** That is the difference between an
+engine specialising a loop and one merely doing slightly less work, and it says the cost is not
+going to come down by tuning the arithmetic. Measured over three builds, with and without Low
+Power Mode, from dev and from production, the phone holds at roughly 34 million inner operations
+a second.
+
+At 13.33 ms for the cheapest accurate setting, and this being a flagship:
+
+| Analysis rate | Share of one core | Settles inside 300 ms? |
+| ------------- | ----------------- | ---------------------- |
+| 30 Hz         | 40 %              | comfortably            |
+| 15 Hz         | 20 %              | yes, 4–5 samples       |
+| 10 Hz         | 13 %              | barely, 3 samples      |
+| 5 Hz          | 7 %               | no                     |
+
+The plan's own device set includes a low-cost Android, which will be two to three times slower
+again.
+
+Superseded, kept for the record:
 
 | Size    | Step ±Refine | ms        | Worst   |
 | ------- | ------------ | --------- | ------- |
