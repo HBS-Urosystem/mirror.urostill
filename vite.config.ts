@@ -35,6 +35,8 @@ export default defineConfig({
 					'manifest-src': ['self'],
 					'object-src': ['none'],
 					'base-uri': ['self'],
+					// No HTML form anywhere submits. The guided test at /test posts its
+					// results with fetch, which 'connect-src: self' already covers.
 					'form-action': ['none']
 				}
 			}

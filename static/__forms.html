@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="robots" content="noindex, nofollow" />
+		<title>Form definition</title>
+	</head>
+	<body>
+		<!--
+			Netlify reads this file at deploy time to learn that the form exists; it
+			is never opened by a person and never submitted from here. The guided
+			test at /test posts to it with fetch.
+
+			Three fields only. Netlify drops anything it was not told about, so a
+			whole run travels as one block of text in `summary` rather than as
+			twenty named fields that would have to be kept in step with the
+			questions in src/lib/test/protocol.ts.
+
+			Delete this file together with the /test route.
+		-->
+		<form name="mirror-test" data-netlify="true" hidden>
+			<input type="text" name="phone" />
+			<textarea name="summary"></textarea>
+		</form>
+	</body>
+</html>

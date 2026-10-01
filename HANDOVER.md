@@ -1,178 +1,125 @@
 # Mirror — device tests
 
-**https://testmirror.netlify.app/**
+**https://testmirror.netlify.app/test**
 
-Mirror turns a phone into a lighted mirror. It shows the camera live and mirrored,
-lets you zoom and move the picture with your fingers, keeps the screen awake, and
-turns the edge of the screen into a white light frame. It installs to the home
-screen and works without a network.
+Mirror turns a phone into a lighted mirror. It shows the camera live and
+mirrored, lets you zoom and move the picture with your fingers, keeps the screen
+awake, and turns the edge of the screen into a white light frame. It installs to
+the home screen and works without a network.
 
-The app is built. What is left is finding out how it behaves on real phones, in a
-real bathroom, at a real distance — and a few of those answers decide what we
-change next.
+The app is built. What is left is finding out how it behaves on real phones, at a
+real distance, in a real room — and a few of those answers decide what gets built
+next.
 
 **Please run this on as many phones as you can.** The differences between devices
-are what we need: a new iPhone passes almost everything, and whatever we settle
-on has to work on the cheapest phone in the set, not the best one.
+are the point: a new iPhone passes almost everything, and whatever gets settled on
+has to work on the cheapest phone in the set, not the best one.
 
-You will need the printed test card. **Do not photocopy or rescale it** — the
-sizes printed on it are what the measurements mean.
+## How to do it
 
-## Two links
+Open **https://testmirror.netlify.app/test** on the phone and work through it.
 
-|                                        |                                                  |
-| -------------------------------------- | ------------------------------------------------ |
-| Normal, with the measurements shown    | https://testmirror.netlify.app/?debug=1          |
-| The same, held at the lower resolution | https://testmirror.netlify.app/?debug=1&res=1080 |
+The page asks one thing at a time, and sets the mirror up for each question
+itself — it puts the picture at the right magnification, switches the camera
+between its two quality settings, turns the light up for the light question, and
+runs the ten-minute clock. There are no settings to find and no links to
+remember.
 
-The first is how the app normally runs. The second holds the camera at a lower
-resolution on purpose, so the two can be compared on the same phone.
+It also records everything it can read off the camera by itself: what the camera
+is capable of, what it settled on, the frame rate it counted, and how much camera
+detail there is behind each screen pixel. None of that has to be copied down.
 
-**Write the numbers down.** Several of the decisions below turn on a single
-figure, and an impression of "looked fine" cannot settle them.
+What you answer is what the app cannot see: whether the picture flickered,
+whether you could read the card, whether there was enough light, whether it
+stayed still.
 
----
+At the very end it shows you everything it is about to send, and sends it in one
+go when you press the button.
 
-## 1. Start it
+### Two things to know before you start
 
-Open the first link and tap **Start mirror**.
+**It takes about twenty minutes**, most of it the ten-minute wait, and you need
+to be able to darken the room for one of the questions.
 
-One thing to watch for: a second or two after the picture appears, the app asks
-the camera for a better quality setting. On the phones tried so far this is
-invisible. **If you see the picture flicker, jump or freeze, please say so** —
-which phone, and what it looked like.
+**Do not reload the page.** Nothing is stored anywhere — not on the phone, not in
+the browser — so a reload loses every answer and you start again from the top.
+That is deliberate: the app keeps nothing.
 
-Then write down four lines from the panel in the corner:
+### What you need
 
-| Line          | What it is                                                |
-| ------------- | --------------------------------------------------------- |
-| `camera max`  | The best the camera can do                                |
-| `mode`        | What the app settled on                                   |
-| `fps`         | Frames actually arriving, next to what the camera claims  |
-| `native zoom` | Whether this camera can zoom by itself, or says `no zoom` |
+- The printed test card. **Do not photocopy or rescale it** — the sizes printed
+  on it are what the measurements mean. Printing it is covered in
+  `ONE-OFF-CHECKS.md`, and one correctly printed card serves everyone.
+- Something to stand the card up, and something to stand the phone on.
+- A room you can darken.
 
-## 2. The card: what the camera can resolve
+## What it asks
 
-Stand the card upright, lit evenly, no glare. **Measure from the card to the
-camera, not to the screen.**
+So you know what is coming, in order:
 
-| Test                                                              | How                                                                                          |
-| ----------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Is it sharp at 30, 35 and 45 cm?                                  | Many front cameras cannot focus, so expect a range rather than a point                       |
-| The finest bar group still showing three separate bars at 5× zoom | Card at 35 cm. Record it in mm                                                               |
-| The smallest line of text you can read without guessing           | Card at 35 cm, at 1× and again at 3×. Record the mm beside the line                          |
-| `src px / device px` at 4×                                        | From the panel. Below 1 means the picture is being enlarged past what the camera really sees |
-
-**Now do the same four with the second link**, which holds the phone at the lower
-resolution.
-
-This comparison answers one question: does the better camera setting show you
-finer bars and smaller text than the lower one on this phone? If it does not,
-there is no reason to use it, and we would switch it off — a bigger picture from
-the camera uses more power and makes the phone warmer for nothing.
-
-## 3. Light
-
-In a dim bathroom, card at 35 cm, the mirror light at its widest setting.
-
-|                                  | 1          | 2      | 3      |
-| -------------------------------- | ---------- | ------ | ------ |
-| Is there enough light to see by? | not enough | usable | plenty |
-
-Score it twice: once with the room light off, once with it on.
-
-## 4. Ten minutes
-
-Start the mirror and leave the phone alone for ten minutes.
-
-- Does the screen stay on the whole time?
-- Does the panel still say `wake lock held` at the end?
-- How much battery did it use?
-- Is the phone warm? Warm is expected — hot is worth telling us about.
-
-While the controls are on screen, move and zoom the picture with your fingers and
-watch the little dark bar at the bottom. Does it stay smooth over the moving
-picture, or does it stutter?
-
-## 5. Does the picture stay still?
-
-Put the phone on a stand at 35 cm and zoom to about 3×.
-
-- **Leave it alone for a minute.** Does the picture drift on its own?
-- **Nudge the stand** by a centimetre. How far off does the picture end up, and is
-  that annoying or just noticeable?
-- **Hold a hand in the middle of the picture.** Does anything change?
-
-This decides whether it is worth writing image stabilisation — software that
-would hold the chosen point in the middle by itself. It would run constantly
-while the mirror is on, so it would shorten the battery and warm the phone. That
-is only a fair trade if the picture moves enough to bother someone.
-
----
-
-## Where to write it down
-
-One of these per phone. Copy the block as many times as you need.
-
-|                                                       |     |
-| ----------------------------------------------------- | --- |
-| **Phone, and which iOS or Android**                   |     |
-| `camera max`                                          |     |
-| `mode`                                                |     |
-| `fps`                                                 |     |
-| `native zoom`                                         |     |
-| Any flicker at the start?                             |     |
-| Sharp at 30 / 35 / 45 cm                              |     |
-| Finest bars at 5×, normal (mm)                        |     |
-| Finest bars at 5×, lower resolution (mm)              |     |
-| Smallest text at 1× / 3×, normal (mm)                 |     |
-| Smallest text at 1× / 3×, lower resolution (mm)       |     |
-| `src px / device px` at 4×, normal                    |     |
-| `src px / device px` at 4×, lower resolution          |     |
-| Light in the dark, room light off / on (1–3)          |     |
-| Screen stayed on ten minutes? `wake lock` at the end? |     |
-| Battery used, and was it warm?                        |     |
-| Did the control bar stay smooth?                      |     |
-| Drift: left alone a minute                            |     |
-| Drift: after a nudge                                  |     |
-| Anything else you noticed                             |     |
-
----
-
-## What your answers decide
-
-| If you find                                                                     | Then                                                                                                                               |
-| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| The quality upgrade holds on every phone, no flicker, no unusual heat           | Keep it as it is                                                                                                                   |
-| It holds, but the phone gets noticeably hot                                     | We lower the ceiling, or stop asking for the upgrade                                                                               |
-| It gives up on several phones                                                   | We find the frame rate it gave up at — our threshold may be in the wrong place                                                     |
-| The higher quality setting shows visibly finer bars or smaller text             | Worth keeping                                                                                                                      |
-| The two settings look the same on the card                                      | Switch the better setting off: it costs power and warmth for no visible gain                                                       |
-| 4× and 5× are still readable                                                    | Leave the zoom range as it is                                                                                                      |
-| 5× is too blurred to read, and 3× is as far as it stays useful                  | Lower the maximum zoom to 3 or 4                                                                                                   |
-| A phone shows a `native zoom` range **and** the bars at 5× are still too coarse | Worth trying the camera's own zoom, which is genuinely sharper                                                                     |
-| Either of those is missing                                                      | Not worth it                                                                                                                       |
-| The screen alone lights the subject well enough at 35 cm                        | The app is enough on its own                                                                                                       |
-| It does not, even at the widest setting                                         | The screen cannot do this alone; a stand with its own light becomes the answer, and that is something to build rather than program |
-| The picture drifts enough to be a nuisance on a stand                           | Stabilisation is worth writing                                                                                                     |
-| It sits still                                                                   | Leave it alone. It would shorten the battery to fix something that is not happening                                                |
+1. **Which phone this is.**
+2. **Starting the camera.** A second or two in, the app asks the camera for a
+   better quality setting. On the phones tried so far that is invisible. Whether
+   you see a flicker is the question.
+3. **Can it focus?** The card at 30, 35 and 45 cm. Many front cameras cannot
+   focus at all, so some distances being soft is an ordinary result.
+4. **The card, four times over.** Bars and text, each at the better camera
+   setting and again at the lower one. The app switches between them; the card
+   stays at 35 cm. Four answers, same card, four conditions.
+5. **Light.** The white frame at its widest, in the dark and then with the room
+   light on.
+6. **Ten minutes.** Note the battery percentage, put the phone down, leave it
+   alone. The point is whether it keeps itself awake, what it costs in battery,
+   and how warm it gets.
+7. **Does the picture stay still?** The phone on a stand, left alone, then
+   nudged, then with a hand in front of it.
+8. **Anything else.** Free text, in any language. Anything that surprised you is
+   worth more here than a blank box.
 
 ## Which phones
 
 A recent iPhone · an older iPhone · a mid-range Samsung · a cheap Android.
 
-If you only have time for two, make one of them the cheapest phone you can find.
+If there is only time for two, make one of them the cheapest phone available.
 
-**Android may behave differently enough to need its own round.** Chrome gives the
-app camera controls that Safari does not, and cheap Android phones are where the
-frame rate and the heat will show first. If Android looks unlike the iPhones,
-tell us rather than working around it — we will write a proper protocol for it.
+**Android may behave differently enough to need a round of its own.** Chrome
+gives the app camera controls that Safari does not, and cheap Android phones are
+where the frame rate and the heat will show first. If Android comes out unlike
+the iPhones, that is worth a note rather than a workaround — a protocol written
+for Android is a better answer than one bent to fit it.
+
+## What these answers decide
+
+Three questions are genuinely open. Nobody has decided them yet, and these runs
+are what will.
+
+**Is the picture good enough to be useful?**
+If the card reads the same at both camera settings, the better one is doing
+nothing and gets switched off — it costs battery and warmth for no visible gain.
+If the picture is too blurred at the highest magnification, the magnification
+gets reduced to wherever it stays readable.
+
+**Is the screen enough light on its own?**
+If it is, the app is the whole product. If it is not, even at its brightest, then
+no amount of programming fixes it and the answer becomes something physical with
+its own light. That is a different kind of decision, and it is better made from
+your answers than from a guess.
+
+**Does the picture need holding still?**
+Software that holds the picture steady by itself can be written, but it would run
+the whole time the mirror is on, shorten the battery and warm the phone. That is
+only a fair trade if the picture moves enough to actually bother someone. If it
+sits still on a stand, it does not get written.
+
+Alongside those: if a phone gets hot, or the quality upgrade gives up, or the
+picture flickers when it switches — each of those changes something concrete, and
+the app records enough detail to say what.
 
 ## Still being decided
 
-These are open, and your experience with the app counts towards them as much as
-anyone's:
+These are open too, and your experience with the app counts towards them as much
+as anyone's:
 
 - The name and the branding.
-- The maximum zoom, pending the card results.
+- The maximum magnification, pending the card results.
 - Whether the Hungarian text stays in the formal register. It currently does.

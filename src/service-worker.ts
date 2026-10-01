@@ -14,10 +14,17 @@ const CACHE = `mirror-${version}`;
  * The app's own build output and nothing else — hard rule 2. `prerendered`
  * carries the shell, which the offline navigation fallback needs.
  *
- * The bench page is a development instrument, not part of the app, so it does
- * not take up room in the offline cache.
+ * The bench page and the guided test are instruments for developing and
+ * checking the app, not part of it, so they take up no room in the offline
+ * cache. The guided test must not be served from a cache in any case: it would
+ * go on working with no network and silently fail to send what it collected.
  */
-const ASSETS = [...build, ...files, ...prerendered.filter((path) => !path.includes('/bench'))];
+const TOOLS = ['/bench', '/test'];
+const ASSETS = [
+	...build,
+	...files,
+	...prerendered.filter((path) => !TOOLS.some((tool) => path.includes(tool)))
+];
 const SHELL = `${base}/`;
 
 sw.addEventListener('install', (event) => {

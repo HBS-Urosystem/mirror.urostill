@@ -2,9 +2,10 @@
 
 **https://testmirror.netlify.app/**
 
-These do not change from phone to phone, so one pass is enough. The rest — the
-card, the light, the heat, the drift — is in `HANDOVER.md` and wants as many
-phones as you can get.
+These do not change from phone to phone, so one pass is enough. The part that
+wants as many phones as you can get — the card, the light, the heat, the drift —
+is the guided test at **https://testmirror.netlify.app/test**, and
+`HANDOVER.md` explains it.
 
 ## Already answered
 
@@ -40,7 +41,10 @@ One Android phone is enough to answer these.
 ## 3. A laptop
 
 Mirror runs on any computer with a webcam, and the whole thing is meant to work
-without touching a screen. On a laptop:
+without touching a screen. This part is not in the guided test, because the
+guided test is about what the camera can resolve and a laptop webcam is not what
+the app will be used on. Open the app itself at
+**https://testmirror.netlify.app/** and try:
 
 | Try                                     | What should happen                                                     |
 | --------------------------------------- | ---------------------------------------------------------------------- |
@@ -59,9 +63,8 @@ and something plugged in?
 If it does, which one does Mirror choose? It asks for a front-facing camera and
 takes what it is given.
 
-**If it picks the wrong one, we add a camera chooser to the controls. If there is
-only ever one camera, or the right one is always chosen, we leave it out** —
-the
+If it picks the wrong one, a camera chooser gets added to the controls. If there
+is only ever one camera, or the right one is always chosen, it stays out: the
 control bar has three buttons on it, and a fourth that most people never need
 makes the other three harder to find.
 
@@ -77,11 +80,11 @@ off, or push the button out of reach.
 
 ## What these decide
 
-| If                                              | Then                                                                |
-| ----------------------------------------------- | ------------------------------------------------------------------- |
-| The ruler on the printed card measures 50 mm    | Everything else measured with it is trustworthy                     |
-| The laptop picks the wrong camera               | Add a camera chooser to the control bar                             |
-| One camera, or always the right one             | Leave it out                                                        |
-| Large text breaks the opening screen            | Worth fixing — it is the one screen with enough text to break       |
-| Android installs and runs offline like iOS does | Nothing further needed                                              |
-| Android behaves unlike iOS in some way          | Tell us, and we write it a protocol of its own rather than guessing |
+| If                                              | Then                                                                                |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------- |
+| The ruler on the printed card measures 50 mm    | Everything else measured with it is trustworthy                                     |
+| The laptop picks the wrong camera               | A camera chooser gets added to the control bar                                      |
+| One camera, or always the right one             | It stays out                                                                        |
+| Large text breaks the opening screen            | Worth fixing — it is the one screen with enough text to break                       |
+| Android installs and runs offline like iOS does | Nothing further needed                                                              |
+| Android behaves unlike iOS in some way          | Take a note of exactly how. A protocol written for Android beats one bent to fit it |

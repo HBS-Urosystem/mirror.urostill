@@ -98,6 +98,8 @@ export class Camera {
 	 * does not probe again. Never persisted — hard rule 2.
 	 */
 	#session: Resolution | null = null;
+	/** What the upgrade settled on, so the stream can be put back to it. */
+	#best: Resolution | null = null;
 	#probed = false;
 
 	get track(): MediaStreamTrack | null {
@@ -198,6 +200,7 @@ export class Camera {
 				width: settings.width ?? wanted.width,
 				height: settings.height ?? wanted.height
 			};
+			this.#best = this.#session;
 			this.upgradeState = 'upgraded';
 			return;
 		}
@@ -217,6 +220,30 @@ export class Camera {
 		this.capabilities = this.track?.getCapabilities?.() ?? null;
 		this.#session = { width: CAMERA_IDEAL.width, height: CAMERA_IDEAL.height };
 		this.upgradeState = 'skipped';
+	}
+
+	/**
+	 * Move the running stream between the resolution the probe settled on and
+	 * the 1080p starting point. The guided test uses this to measure the same
+	 * card both ways without restarting the camera or reloading the page.
+	 */
+	async useResolution(which: 'base' | 'settled'): Promise<void> {
+		const track = this.track;
+		if (!track?.applyConstraints) return;
+
+		if (which === 'base' || !this.#best) {
+			await this.#applyBaseResolution(track);
+			return;
+		}
+		try {
+			await track.applyConstraints({
+				width: { ideal: this.#best.width },
+				height: { ideal: this.#best.height },
+				frameRate: { ideal: CAMERA_IDEAL.frameRate }
+			});
+		} catch {
+			// Keep whatever the camera is already giving us.
+		}
 	}
 
 	async #applyBaseResolution(track: MediaStreamTrack): Promise<void> {

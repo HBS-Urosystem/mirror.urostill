@@ -429,7 +429,7 @@ export const TRACK_MIN_ZOOM = 1.1; // r4: phase 7 tracks only above this zoom
 - [x] `scripts/check-privacy.mjs`: scan `src/` and fail on any of `MediaRecorder`, `takePhoto`, `grabFrame`, `toDataURL`, `toBlob`, `readPixels` (r2), `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie`, `sendBeacon`, `XMLHttpRequest`, `WebSocket`, `EventSource`, ` download=`, `fetch(` with an absolute `http(s)://` URL, and `getImageData` outside `src/lib/motion/`. Wire it into `npm run check`.
 - [x] Vitest configured. Playwright configured with Chromium flags `--use-fake-ui-for-media-stream` and `--use-fake-device-for-media-stream`.
 - [x] `npm run dev:https` using `@vitejs/plugin-basic-ssl` (dev only), for LAN phone checks. Note: a phone on plain `http://192.168.x.x` gets no camera.
-- [ ] Netlify (needs the account holder): `netlify.toml` is in the repo — build `npm run build`, publish `build`. Deploy previews on; this is the main way to test on phones (real HTTPS, no certificate warnings). Turn off form detection and snippet injection in the site settings.
+- [ ] Netlify (needs the account holder): `netlify.toml` is in the repo — build `npm run build`, publish `build`. Deploy previews on; this is the main way to test on phones (real HTTPS, no certificate warnings). Turn off snippet injection in the site settings. **Turn form detection on** while the guided test at `/test` exists: it is what makes `static/__forms.html` register the `mirror-test` form, and without it the test's results have nowhere to go. Turn it off again when `/test` and `static/__forms.html` are deleted.
 
 **Acceptance**
 

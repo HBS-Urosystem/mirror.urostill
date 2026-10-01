@@ -25,6 +25,7 @@
 		pan,
 		pictureSize,
 		pinch,
+		sourcePixelsPerScreenPixel,
 		toNormalised,
 		translationForCentre,
 		type Vec,
@@ -42,7 +43,11 @@
 		wakeLockStatus,
 		onexit,
 		onplayfail,
-		onvideoready
+		onvideoready,
+		zoom = $bindable(ZOOM_START),
+		level = $bindable(HALO_DEFAULT),
+		controls = true,
+		onreadings
 	}: {
 		t: Strings;
 		stream: MediaStream | null;
@@ -53,6 +58,14 @@
 		onplayfail: (error: unknown) => void;
 		/** The picture is running; the resolution probe can start. */
 		onvideoready: (video: HTMLVideoElement) => void;
+		/** Bound so the guided test can put the picture at a known magnification. */
+		zoom?: number;
+		/** Bound so the guided test can set the light without the pill. */
+		level?: HaloLevel;
+		/** The guided test hides the pill and drives the mirror itself. */
+		controls?: boolean;
+		/** Numbers that only exist in here, for whoever is recording them. */
+		onreadings?: (readings: { cover: number; zoom: number; sourcePerDevicePx: number }) => void;
 	} = $props();
 
 	const reducedMotion = new MediaQuery('(prefers-reduced-motion: reduce)');
@@ -64,13 +77,11 @@
 	let streamW = $state(0);
 	let streamH = $state(0);
 
-	let level = $state<HaloLevel>(HALO_DEFAULT);
 	/** The direction the light is being taken, so the button can turn around at the ends. */
 	let rising = $state(true);
 	/** 0 at the edge of the screen, 1 at full width. The one choreographed motion. */
 	let openProgress = $state(0);
 
-	let zoom = $state(ZOOM_START);
 	/**
 	 * The picture point held at the stage centre, in normalised picture
 	 * coordinates — so a resize, a rotation or a change of stream size cannot
@@ -237,6 +248,16 @@
 		};
 	});
 
+	// Cover and the pixel ratio only exist in here; the guided test needs them
+	// to work out how much real detail is reaching the screen.
+	$effect(() => {
+		onreadings?.({
+			cover,
+			zoom,
+			sourcePerDevicePx: sourcePixelsPerScreenPixel(cover, zoom, window.devicePixelRatio || 1)
+		});
+	});
+
 	/** The stream swaps its width and height when the phone rotates. */
 	function readIntrinsicSize() {
 		streamW = video?.videoWidth ?? 0;
@@ -330,7 +351,7 @@
 		</div>
 	{/if}
 
-	{#if controlsVisible}
+	{#if controls && controlsVisible}
 		<div
 			class="pointer-events-none absolute inset-x-0 flex justify-center"
 			style:bottom="calc(env(safe-area-inset-bottom) + 0.75rem)"

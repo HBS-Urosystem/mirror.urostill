@@ -4,7 +4,8 @@
  *
  *   1. No capture      — nothing that can produce a photo, a video or a file.
  *   2. No persistence  — nothing that survives a reload.
- *   3. No outbound network — the app's own origin only.
+ *   3. No outbound network — the app's own origin only, and the mirror itself
+ *                            requests nothing at all.
  *   4. Pixels may only be read inside src/lib/motion/ (the scoped exception).
  *
  * Deliberately a dumb text scan with no escape hatch: a match in a comment is
@@ -15,7 +16,7 @@ import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 /**
- * @typedef {{ rule: number; pattern: RegExp; why: string; allowIn?: string }} Check
+ * @typedef {{ rule: number; pattern: RegExp; why: string; allowIn?: string[] }} Check
  * @typedef {{ file: string; line: number; text: string; match: string; rule: number; why: string }} Finding
  */
 
@@ -48,7 +49,13 @@ export const CHECKS = [
 		rule: 4,
 		pattern: /\bgetImageData\b/,
 		why: 'pixels may only be read inside src/lib/motion/',
-		allowIn: 'lib/motion/'
+		allowIn: ['lib/motion/']
+	},
+	{
+		rule: 3,
+		pattern: /\bfetch\s*\(/,
+		why: 'the mirror requests nothing; the service worker serves the cache, and only the guided test at src/routes/test/ posts anything',
+		allowIn: ['service-worker.ts', 'routes/test/']
 	}
 ];
 
@@ -64,7 +71,7 @@ export function scanText(file, text) {
 	const findings = [];
 	const lines = text.split('\n');
 	for (const check of CHECKS) {
-		if (check.allowIn && file.startsWith(check.allowIn)) continue;
+		if (check.allowIn?.some((prefix) => file.startsWith(prefix))) continue;
 		lines.forEach((line, i) => {
 			const m = check.pattern.exec(line);
 			if (m) {

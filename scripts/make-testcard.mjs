@@ -142,7 +142,7 @@ add(
 		MARGIN,
 		y + 8,
 		2,
-		'Keep the card flat and evenly lit. Measure the distance to the camera, not to the screen.'
+		'Keep the card flat and evenly lit, and measure the distance from the card to the phone.'
 	)
 );
 

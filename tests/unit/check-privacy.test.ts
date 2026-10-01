@@ -16,9 +16,22 @@ describe('check:privacy', () => {
 		expect(found.map((f) => f.rule)).toEqual([2]);
 	});
 
-	it('flags an absolute fetch but not a same-origin one (rule 3)', () => {
-		expect(scanText('lib/x.ts', "await fetch('https://example.com/t');")).toHaveLength(1);
-		expect(scanText('lib/x.ts', "await fetch('/icons/icon-192.png');")).toEqual([]);
+	it('flags any request from the mirror itself, same-origin included (rule 3)', () => {
+		// An off-origin call breaks two rules at once: the mirror may not make a
+		// request at all, and nothing anywhere may leave this origin.
+		expect(scanText('lib/x.ts', "await fetch('https://example.com/t');")).toHaveLength(2);
+		expect(scanText('lib/x.ts', "await fetch('/icons/icon-192.png');")).toHaveLength(1);
+	});
+
+	it('lets the service worker and the guided test make requests (rule 3)', () => {
+		expect(scanText('service-worker.ts', 'return fetch(request);')).toEqual([]);
+		expect(scanText('routes/test/+page.svelte', "await fetch('/', { method: 'POST' });")).toEqual(
+			[]
+		);
+		// But the exception is for its own origin only.
+		expect(
+			scanText('routes/test/+page.svelte', "await fetch('https://example.com/');")
+		).toHaveLength(1);
 	});
 
 	it('allows pixel reads only under src/lib/motion/ (rule 4)', () => {

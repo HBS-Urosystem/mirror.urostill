@@ -15,5 +15,8 @@
 /bench
   Cache-Control: no-cache
 
+/test
+  Cache-Control: no-cache
+
 /service-worker.js
   Cache-Control: no-cache
