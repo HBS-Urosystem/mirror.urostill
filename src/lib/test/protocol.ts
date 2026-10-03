@@ -105,6 +105,12 @@ export interface Step {
 	 * step to change an answer, it opens as usual.
 	 */
 	startClosed?: true;
+	/**
+	 * The card is being put at a distance on this step, so the step bar shows
+	 * how far the camera says it is focused, on a phone that reports it.
+	 * See `focus.ts` for why the guided test is allowed to.
+	 */
+	focusAid?: true;
 }
 
 /** The bar widths printed on the card, finest first. */
@@ -197,6 +203,7 @@ export const STEPS: Step[] = [
 		id: 'card-best',
 		title: 'Card, high resolution',
 		needsCamera: true,
+		focusAid: true,
 		zoom: 5,
 		resolution: 'settled',
 		ifNotRaised: { kind: 'retitle', title: 'Card' },
@@ -214,6 +221,7 @@ export const STEPS: Step[] = [
 		id: 'card-base',
 		title: 'Card, 1920×1080',
 		needsCamera: true,
+		focusAid: true,
 		zoom: 5,
 		resolution: 'base',
 		ifNotRaised: {
@@ -228,6 +236,7 @@ export const STEPS: Step[] = [
 		id: 'light',
 		title: 'Light',
 		needsCamera: true,
+		focusAid: true,
 		zoom: 1,
 		light: 'bright',
 		resolution: 'settled',

@@ -24,6 +24,8 @@ const snapshot = (over: Partial<Snapshot> = {}): Snapshot => ({
 	devicePixelRatio: 3,
 	wakeLockStatus: 'held',
 	userAgent: 'Mozilla/5.0 (iPhone)',
+	focusDistance: null,
+	focusReported: false,
 	...over
 });
 
@@ -35,6 +37,7 @@ const input = (over: Partial<RunInput> = {}): RunInput => ({
 	startStep: 'start',
 	startFrames: undefined,
 	countdown: { ran: false, hiddenWithLeft: null, stoppedWithLeft: null },
+	focusMoved: false,
 	...over
 });
 
@@ -123,7 +126,9 @@ describe('runData', () => {
 			settledWidth: 1920,
 			settledHeight: 1080,
 			outcome: 'fellback',
-			countedFps: 16.5
+			countedFps: 16.5,
+			focusReported: false,
+			focusMoved: false
 		});
 		expect(data.device).toMatchObject({ screenWidth: 390, pixelRatio: 3, wakeLock: 'held' });
 	});
@@ -139,7 +144,8 @@ describe('runData', () => {
 			sourcePerDevicePx: 0.654,
 			zoom: 5,
 			width: 1920,
-			height: 1080
+			height: 1080,
+			focusM: null
 		});
 	});
 
@@ -181,6 +187,20 @@ describe('runData', () => {
 			stoppedEarly: false,
 			stoppedWithLeftS: null
 		});
+	});
+
+	it('records whether the camera reported its focus, whether that was live, and what it said', () => {
+		const data = runData(
+			input({
+				snapshots: {
+					start: snapshot({ focusReported: true }),
+					'card-best': snapshot({ focusReported: true, focusDistance: 0.3412 })
+				},
+				focusMoved: true
+			})
+		);
+		expect(data.camera).toMatchObject({ focusReported: true, focusMoved: true });
+		expect(data.detail['card-best'].focusM).toBe(0.341);
 	});
 
 	it('survives a trip through JSON unchanged: no NaN, no undefined', () => {

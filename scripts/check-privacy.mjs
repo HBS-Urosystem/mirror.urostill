@@ -52,6 +52,12 @@ export const CHECKS = [
 		allowIn: ['lib/motion/']
 	},
 	{
+		rule: 4,
+		pattern: /\bfocusDistance\b/,
+		why: "the mirror never measures; only the guided test may read the camera's focus distance",
+		allowIn: ['lib/test/', 'routes/test/']
+	},
+	{
 		rule: 3,
 		pattern: /\bfetch\s*\(/,
 		why: 'the mirror requests nothing; the service worker serves the cache, and only the guided test at src/routes/test/ posts anything',

@@ -41,6 +41,14 @@ describe('check:privacy', () => {
 		);
 	});
 
+	it("lets only the guided test read the camera's focus distance (rule 4)", () => {
+		const line = 'const d = track.getSettings().focusDistance;';
+		expect(scanText('routes/test/+page.svelte', line)).toEqual([]);
+		expect(scanText('lib/test/focus.ts', line)).toEqual([]);
+		expect(scanText('lib/components/Mirror.svelte', line).map((f) => f.rule)).toEqual([4]);
+		expect(scanText('lib/camera.svelte.ts', line)).toHaveLength(1);
+	});
+
 	it('reports the line number and the offending text', () => {
 		const [finding] = scanText('lib/x.ts', 'const a = 1;\nnew MediaRecorder(stream);');
 		expect(finding).toMatchObject({ line: 2, match: 'MediaRecorder', rule: 1 });

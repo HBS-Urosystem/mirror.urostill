@@ -55,6 +55,8 @@ export interface RunInput {
 	startStep: string;
 	startFrames: Frame[] | null | undefined;
 	countdown: Countdown;
+	/** Whether the focus distance ever changed while a card was being placed: whether it was live. */
+	focusMoved: boolean;
 }
 
 /** `null`: nothing recorded. `measurable: false`: this browser cannot be recorded from. */
@@ -89,7 +91,8 @@ export function runData({
 	snapshots,
 	startStep,
 	startFrames,
-	countdown
+	countdown,
+	focusMoved
 }: RunInput) {
 	const questions = steps.flatMap((s) => [...(s.beforeWait ?? []), ...s.questions]);
 	const start = snapshots[startStep];
@@ -110,7 +113,9 @@ export function runData({
 					settledWidth: start.trackWidth || null,
 					settledHeight: start.trackHeight || null,
 					outcome: start.upgradeState,
-					countedFps: round(start.probedFps, 1)
+					countedFps: round(start.probedFps, 1),
+					focusReported: start.focusReported,
+					focusMoved
 				}
 			: null,
 		start: startData(startFrames),
@@ -122,7 +127,8 @@ export function runData({
 					sourcePerDevicePx: round(s.sourcePerDevicePx, 3),
 					zoom: round(s.zoom, 2),
 					width: s.trackWidth || null,
-					height: s.trackHeight || null
+					height: s.trackHeight || null,
+					focusM: s.focusDistance === null ? null : round(s.focusDistance, 3)
 				}
 			])
 		),

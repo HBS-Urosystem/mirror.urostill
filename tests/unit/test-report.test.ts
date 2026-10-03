@@ -21,6 +21,7 @@ import {
 	clock,
 	detailReading,
 	deviceReadings,
+	focusReading,
 	waitReadings,
 	type Snapshot
 } from '../../src/lib/test/readings';
@@ -44,6 +45,8 @@ const snapshot = (over: Partial<Snapshot> = {}): Snapshot => ({
 	devicePixelRatio: 3,
 	wakeLockStatus: 'held',
 	userAgent: 'Mozilla/5.0 (iPhone)',
+	focusDistance: null,
+	focusReported: false,
 	...over
 });
 
@@ -378,6 +381,23 @@ describe('readings', () => {
 		expect(settled('unavailable')).toContain('not raised');
 		// A state added later still shows up, under its own name.
 		expect(settled('something-new')).toContain('something-new');
+	});
+
+	it('says whether the camera reports how far it is focused', () => {
+		const said = (reported: boolean) =>
+			deviceReadings(snapshot({ focusReported: reported })).find((r) =>
+				r.label.startsWith('Reports how far')
+			)!.value;
+		expect(said(true)).toBe('yes');
+		expect(said(false)).toBe('no');
+	});
+
+	it('records the focus distance on a step only where the camera gave one', () => {
+		expect(focusReading('Card', snapshot())).toBeNull();
+		expect(focusReading('Card', snapshot({ focusDistance: 0.346 }))).toEqual({
+			label: 'Camera focused at — card',
+			value: '35 cm'
+		});
 	});
 
 	it('says what it found rather than printing a blank when there is no hardware zoom', () => {

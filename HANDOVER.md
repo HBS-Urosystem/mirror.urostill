@@ -68,6 +68,7 @@ You need:
 - the printed test card, **not photocopied or rescaled**: the sizes printed on
   it are what the answers mean;
 - something to stand the card on, and something to stand the phone on;
+- a tape measure;
 - a room you can darken.
 
 **Do not reload the page.** Nothing is stored, so a reload loses every answer.
@@ -75,6 +76,10 @@ You need:
 The page asks one thing at a time, sets the mirror up for each step itself, and
 records whatever it can measure without asking you. At the end it shows
 everything it will send, and sends it in one go.
+
+On some Android phones the bar at the bottom also shows how far the camera is
+focused while you place the card. Use it to find the distance, and check it
+against the tape measure.
 
 ## The steps, and what each is for
 
