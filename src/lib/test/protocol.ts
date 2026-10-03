@@ -111,6 +111,12 @@ export interface Step {
 	 * See `focus.ts` for why the guided test is allowed to.
 	 */
 	focusAid?: true;
+	/**
+	 * A file the tester needs, shown as a button with a line saying what it is
+	 * for. It opens in a new tab rather than downloading: hard rule 1 allows no
+	 * download feature, and a PDF viewer prints it just the same.
+	 */
+	link?: { href: string; label: string; note: string };
 }
 
 /** The bar widths printed on the card, finest first. */
@@ -163,6 +169,11 @@ export const STEPS: Step[] = [
 		instructions: [
 			'Keep this page open to the end. Nothing is saved, so a reload loses the answers.'
 		],
+		link: {
+			href: '/testcard.pdf',
+			label: 'Test card (PDF)',
+			note: 'The test needs this card printed at 100 %, with "fit to page" off. Its ruler must measure 50 mm.'
+		},
 		questions: [
 			{
 				kind: 'text',
@@ -173,7 +184,7 @@ export const STEPS: Step[] = [
 		],
 		/** Said next to the button that starts the camera, before there is anything to watch. */
 		before:
-			'Pressing Next starts the camera and moves this panel out of the way. Watch the picture for the first few seconds: it may flicker, jump, go black or freeze. Then tap the bar at the bottom to answer.'
+			'Pressing Next starts the camera and hides this panel. Watch the picture for the first few seconds: it may flicker, jump, go black or freeze. Then tap the bar at the bottom to answer.'
 	},
 	{
 		id: 'start',

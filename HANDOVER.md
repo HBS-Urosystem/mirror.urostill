@@ -1,7 +1,7 @@
 # Mirror — device tests
 
-The app: **https://testmirror.netlify.app/**
-The guided test: **https://testmirror.netlify.app/test**
+The app: **https://uromirror.netlify.app/**
+The guided test: **https://uromirror.netlify.app/test**
 
 ## What the app does
 
@@ -60,13 +60,15 @@ many phones as you can.**
 
 ## How to run the test
 
-Open **https://testmirror.netlify.app/test** on the phone. It takes about
+Open **https://uromirror.netlify.app/test** on the phone. It takes about
 fifteen minutes, ten of them waiting.
 
 You need:
 
-- the printed test card, **not photocopied or rescaled**: the sizes printed on
-  it are what the answers mean;
+- the printed test card. The test's first step has it as a PDF: print it at
+  100 %, with "fit to page" off, and check that its ruler measures 50 mm. A
+  photocopy or a rescaled print will not do: the sizes printed on it are what
+  the answers mean;
 - something to stand the card on, and something to stand the phone on;
 - a tape measure;
 - a room you can darken.

@@ -20,9 +20,11 @@ const CACHE = `mirror-${version}`;
  * go on working with no network and silently fail to send what it collected.
  */
 const TOOLS = ['/bench', '/test'];
+/** Static files only the guided test uses: its form definition and the card it links to. */
+const TEST_FILES = ['/__forms.html', '/testcard.pdf'];
 const ASSETS = [
 	...build,
-	...files,
+	...files.filter((path) => !TEST_FILES.some((file) => path.endsWith(file))),
 	...prerendered.filter((path) => !TOOLS.some((tool) => path.includes(tool)))
 ];
 const SHELL = `${base}/`;

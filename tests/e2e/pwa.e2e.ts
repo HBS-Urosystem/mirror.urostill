@@ -38,6 +38,27 @@ test('the app starts with no network once the service worker holds it', async ({
 	await context.setOffline(false);
 });
 
+test('the offline cache holds the mirror, and nothing that only the guided test uses', async ({
+	page
+}) => {
+	await page.goto('/');
+	await page.evaluate(() => navigator.serviceWorker.ready);
+	const cached = await page.evaluate(async () => {
+		const paths: string[] = [];
+		for (const name of await caches.keys()) {
+			for (const request of await (await caches.open(name)).keys()) {
+				paths.push(new URL(request.url).pathname);
+			}
+		}
+		return paths;
+	});
+	expect(cached).toContain('/');
+	expect(cached).toContain('/manifest.webmanifest');
+	for (const testOnly of ['/test', '/bench', '/testcard.pdf', '/__forms.html']) {
+		expect(cached, testOnly).not.toContain(testOnly);
+	}
+});
+
 test('no install hint where the browser offers its own', async ({ page }) => {
 	await page.goto('/');
 	await expect(page.getByText('Home Screen')).toHaveCount(0);

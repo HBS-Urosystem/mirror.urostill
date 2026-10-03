@@ -217,6 +217,24 @@ test('the camera starts with the panel out of the way, and the bar brings it bac
 	await expect(stepTitle(page)).toHaveText('Starting the camera');
 });
 
+test('the first step links to the test card, which opens in a new tab to print', async ({
+	page,
+	request
+}) => {
+	await page.goto('/test');
+	await expect(page.getByText('printed at 100 %')).toBeVisible();
+	const link = page.getByRole('link', { name: 'Test card (PDF)' });
+	await expect(link).toBeVisible();
+	await expect(link).toHaveAttribute('target', '_blank');
+	// Hard rule 1: a link to open, never a download.
+	expect(await link.getAttribute('download')).toBeNull();
+
+	const response = await request.get((await link.getAttribute('href'))!);
+	expect(response.status()).toBe(200);
+	expect(response.headers()['content-type']).toContain('application/pdf');
+	expect((await response.body()).subarray(0, 5).toString()).toBe('%PDF-');
+});
+
 test('the warning to watch the picture comes before the camera starts', async ({ page }) => {
 	await page.goto('/test');
 	await expect(stepTitle(page)).toHaveText('Which phone is this?');

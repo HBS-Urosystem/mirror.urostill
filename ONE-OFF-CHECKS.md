@@ -1,10 +1,10 @@
 # Mirror — checks that only need doing once
 
-**https://testmirror.netlify.app/**
+**https://uromirror.netlify.app/**
 
 These do not change from phone to phone, so one pass is enough. The part that
 wants as many phones as you can get — the card, the light, the heat, the drift —
-is the guided test at **https://testmirror.netlify.app/test**, and
+is the guided test at **https://uromirror.netlify.app/test**, and
 `HANDOVER.md` explains it.
 
 ## Already answered
@@ -44,7 +44,7 @@ Mirror runs on any computer with a webcam, and the whole thing is meant to work
 without touching a screen. This part is not in the guided test, because the
 guided test is about what the camera can resolve and a laptop webcam is not what
 the app will be used on. Open the app itself at
-**https://testmirror.netlify.app/** and try:
+**https://uromirror.netlify.app/** and try:
 
 | Try                                     | What should happen                                                     |
 | --------------------------------------- | ---------------------------------------------------------------------- |

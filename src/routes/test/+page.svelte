@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { asset } from '$app/paths';
+	import type { Asset } from '$app/types';
 	import { camera } from '$lib/camera.svelte';
 	import Mirror from '$lib/components/Mirror.svelte';
 	import { HALO_DEFAULT, ZOOM_START, type HaloLevel } from '$lib/config';
@@ -210,6 +212,8 @@
 	const finishing = $derived(
 		isLastStep(index, steps) && (waitPhase === null || waitPhase === 'over')
 	);
+	/** No camera picture behind the panel, so the space above it can carry the step's instructions. */
+	const roomAbove = $derived(!cameraOn && !sent);
 	/** Open: the bottom half of the screen. Closed: only the top bar, as while the countdown runs. */
 	const sheetOpen = $derived(sent || (panelOpen && waitPhase !== 'running'));
 
@@ -431,6 +435,31 @@
 
 <svelte:document onvisibilitychange={onVisibilityChange} />
 
+{#snippet guidance()}
+	{#if shownInstructions.length > 0}
+		<ul class="space-y-1 text-note">
+			{#each shownInstructions as line (line)}
+				<li>{line}</li>
+			{/each}
+		</ul>
+	{/if}
+	{#if step.link}
+		<!--
+			Opens in a new tab, never downloads (hard rule 1). A new tab also keeps
+			this page, and its answers, where they are.
+		-->
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+			<p class="text-note">{step.link.note}</p>
+			<a
+				class="btn btn-outline btn-sm"
+				href={asset(step.link.href as Asset)}
+				target="_blank"
+				rel="noopener">{step.link.label}</a
+			>
+		</div>
+	{/if}
+{/snippet}
+
 <div class="relative min-h-dvh bg-porcelain text-ink">
 	{#if cameraOn}
 		<Mirror
@@ -461,6 +490,19 @@
 			}}
 			onreadings={(r) => (live = r)}
 		/>
+	{/if}
+
+	{#if roomAbove}
+		<!--
+			No picture yet, so the top half of the screen is free: the step's
+			instructions and its link go there, and the panel keeps to its half with
+			room for the question, the warning and the button.
+		-->
+		<div
+			class="fixed inset-x-0 top-0 flex h-[50dvh] flex-col justify-center px-5 pt-[env(safe-area-inset-top)]"
+		>
+			<div class="mx-auto w-full max-w-prose space-y-3">{@render guidance()}</div>
+		</div>
 	{/if}
 
 	<!--
@@ -533,12 +575,8 @@
 						{step.title}
 					</h2>
 
-					{#if shownInstructions.length > 0}
-						<ul class="mt-2 space-y-1 text-note">
-							{#each shownInstructions as line (line)}
-								<li>{line}</li>
-							{/each}
-						</ul>
+					{#if !roomAbove}
+						<div class="mt-2 space-y-3">{@render guidance()}</div>
 					{/if}
 
 					{#if cameraError}
