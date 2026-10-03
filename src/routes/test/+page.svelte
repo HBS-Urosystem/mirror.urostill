@@ -9,18 +9,9 @@
 		clock,
 		detailReading,
 		deviceReadings,
-		focusReading,
 		waitReadings,
 		type Snapshot
 	} from '$lib/test/readings';
-	import {
-		FOCUS_POLL_MS,
-		FOCUS_START,
-		focusText,
-		nextFocus,
-		readFocus,
-		type FocusState
-	} from '$lib/test/focus';
 	import { recordFrames, startReadings, type Frame } from '$lib/test/startwatch';
 	import {
 		adaptSteps,
@@ -127,10 +118,6 @@
 	let hiddenWithLeft = $state<number | null>(null);
 	/** Seconds left when the countdown was stopped early. */
 	let stoppedWithLeft = $state<number | null>(null);
-	/** How far the camera says it is focused, as read on the current step. See `$lib/test/focus`. */
-	let focus = $state<FocusState>(FOCUS_START);
-	/** Whether that reading ever changed while a card was being placed: whether it was live. */
-	let focusMoved = $state(false);
 	/** The step with the countdown, whose report lines say what happened during it. */
 	const WAIT_STEP = STEPS.find((s) => s.waitSeconds)?.id ?? '';
 
@@ -151,12 +138,12 @@
 	);
 	const readingsByStep = $derived(
 		Object.fromEntries(
-			Object.entries(snapshotsByStep).map(([id, snap]): [string, Reading[]] => {
-				if (id === 'start') return [id, deviceReadings(snap)];
-				const title = adapted.find((s) => s.id === id)?.title ?? id;
-				const focus = focusReading(title, snap);
-				return [id, [detailReading(title, snap), ...(focus ? [focus] : [])]];
-			})
+			Object.entries(snapshotsByStep).map(([id, snap]): [string, Reading[]] => [
+				id,
+				id === 'start'
+					? deviceReadings(snap)
+					: [detailReading(adapted.find((s) => s.id === id)?.title ?? id, snap)]
+			])
 		)
 	);
 	const readings = $derived(
@@ -179,8 +166,7 @@
 			snapshots: snapshotsByStep,
 			startStep: 'start',
 			startFrames,
-			countdown: { ran: waitRan, hiddenWithLeft, stoppedWithLeft },
-			focusMoved
+			countdown: { ran: waitRan, hiddenWithLeft, stoppedWithLeft }
 		})
 	);
 
@@ -251,9 +237,7 @@
 			screenHeight: window.innerHeight,
 			devicePixelRatio: window.devicePixelRatio || 1,
 			wakeLockStatus: wakeLock.status,
-			userAgent: navigator.userAgent,
-			focusDistance: readFocus(settings),
-			focusReported: caps !== null && 'focusDistance' in caps
+			userAgent: navigator.userAgent
 		};
 	}
 
@@ -273,23 +257,6 @@
 		// instead of staying silent on a page that has just changed under it.
 		heading?.focus();
 	});
-
-	/**
-	 * While a card is being placed, read how far the camera says it is focused.
-	 * The reading starts afresh on every step: a step's resolution is applied on
-	 * arrival, which refreshes the camera's settings, so a change across steps
-	 * would not show that the value is live. Only a change within the step does.
-	 */
-	$effect(() => {
-		focus = FOCUS_START;
-		if (!step.focusAid || !cameraOn) return;
-		const id = setInterval(() => {
-			focus = nextFocus(focus, readFocus(camera.track?.getSettings?.()));
-			if (focus.moved) focusMoved = true;
-		}, FOCUS_POLL_MS);
-		return () => clearInterval(id);
-	});
-	const focusLine = $derived(step.focusAid ? focusText(focus) : null);
 
 	/** Set the mirror up for whichever step is on screen. */
 	$effect(() => {
@@ -538,14 +505,6 @@
 				onclick={() => (panelOpen = !panelOpen)}
 			>
 				<span class="text-note font-semibold">{counterText(step.id, raised)}</span>
-				{#if focusLine}
-					<!--
-						Hard rule 4 exception, for the guided test only and decided by the
-						user: a measurement on screen while the mirror runs. Never in the
-						mirror itself — see $lib/test/focus.
-					-->
-					<span class="text-note tabular-nums">{focusLine}</span>
-				{/if}
 				<span class="ml-auto text-xs font-semibold">{panelOpen ? 'Hide' : 'Show'}</span>
 			</button>
 		{:else}

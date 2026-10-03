@@ -126,49 +126,6 @@ async function cameraThatKeepsUp(page: Page) {
 	});
 }
 
-/**
- * A camera that reports how far it is focused, the way Chrome does on an
- * Android phone with an autofocus front camera. The distance is whatever the
- * test puts in `window.focusM`, so the test plays the part of the card moving.
- */
-async function cameraThatFocuses(page: Page) {
-	await page.addInitScript(() => {
-		const w = window as unknown as { focusM: number };
-		w.focusM = 0.4;
-		const getCapabilities = MediaStreamTrack.prototype.getCapabilities;
-		MediaStreamTrack.prototype.getCapabilities = function () {
-			const range = { min: 0.1, max: 2, step: 0.01 };
-			return { ...getCapabilities.call(this), focusDistance: range } as MediaTrackCapabilities;
-		};
-		const getSettings = MediaStreamTrack.prototype.getSettings;
-		MediaStreamTrack.prototype.getSettings = function () {
-			return { ...getSettings.call(this), focusDistance: w.focusM } as MediaTrackSettings;
-		};
-	});
-}
-
-/** A camera that says nothing about its focus, the way an iPhone's front camera does in Safari. */
-async function cameraWithoutFocus(page: Page) {
-	await page.addInitScript(() => {
-		const withoutFocus = <T extends object>(o: T): T => {
-			const copy = { ...o } as T & { focusDistance?: unknown };
-			delete copy.focusDistance;
-			return copy;
-		};
-		const getCapabilities = MediaStreamTrack.prototype.getCapabilities;
-		MediaStreamTrack.prototype.getCapabilities = function () {
-			return withoutFocus(getCapabilities.call(this));
-		};
-		const getSettings = MediaStreamTrack.prototype.getSettings;
-		MediaStreamTrack.prototype.getSettings = function () {
-			return withoutFocus(getSettings.call(this));
-		};
-	});
-}
-
-const moveCardTo = (page: Page, metres: number) =>
-	page.evaluate((m) => ((window as unknown as { focusM: number }).focusM = m), metres);
-
 async function startTest(page: Page, phone = 'Test phone') {
 	await page.goto('/test');
 	await page.getByRole('textbox').fill(phone);
@@ -544,69 +501,6 @@ test('the whole step bar shows and hides the panel', async ({ page }) => {
 	await counter(page).click();
 	await expect(stepTitle(page)).toBeVisible();
 	await expect(bar).toHaveAttribute('aria-expanded', 'true');
-});
-
-test('on a camera that reports its focus, the step bar shows it once the card moves', async ({
-	page
-}) => {
-	let posted = '';
-	await page.route('**/', async (route) => {
-		if (route.request().method() !== 'POST') return route.fallback();
-		posted = route.request().postData() ?? '';
-		await route.fulfill({ status: 200, body: 'ok' });
-	});
-	await cameraThatFocuses(page);
-	await startTest(page);
-	await walkTo(page, 'Card');
-	const readout = page.getByText(/^focused at \d+ cm$/);
-
-	// The same number all along could be one the browser stopped refreshing.
-	await page.waitForTimeout(800);
-	await expect(readout).toHaveCount(0);
-
-	await moveCardTo(page, 0.34);
-	await expect(readout).toHaveText('focused at 34 cm');
-	// In the bar, so it shows with the panel closed too.
-	await page.getByRole('button', { name: /Hide$/ }).click();
-	await expect(readout).toBeVisible();
-	await page.getByRole('button', { name: /Show$/ }).click();
-
-	// What the camera said when the card step was answered goes in the report.
-	await walkToEnd(page);
-	await expect(page.locator('pre')).toContainText('Camera focused at — card: 34 cm');
-	await sendButton(page).click();
-	await expect(page.getByRole('heading', { name: 'Sent. Thank you.' })).toBeVisible();
-	const data = JSON.parse(new URLSearchParams(posted).get('data')!);
-	expect(data.camera).toMatchObject({ focusReported: true, focusMoved: true });
-	expect(data.detail['card-best'].focusM).toBe(0.34);
-});
-
-test('on a camera that does not report its focus, the bar shows no distance', async ({ page }) => {
-	await cameraWithoutFocus(page);
-	await startTest(page);
-	await walkTo(page, 'Card');
-	await page.waitForTimeout(800);
-	await expect(page.getByText(/^focused at/)).toHaveCount(0);
-
-	await walkToEnd(page);
-	const sent = page.locator('pre');
-	await expect(sent).toContainText('Reports how far it is focused: no');
-	await expect(sent).not.toContainText('Camera focused at');
-});
-
-test('a focus distance that cannot be a card on a table is neither shown nor recorded', async ({
-	page
-}) => {
-	// Chromium's fake camera reports a focus range, and 50 m as its setting.
-	await startTest(page);
-	await walkTo(page, 'Card');
-	await page.waitForTimeout(800);
-	await expect(page.getByText(/^focused at/)).toHaveCount(0);
-
-	await walkToEnd(page);
-	const sent = page.locator('pre');
-	await expect(sent).toContainText('Reports how far it is focused: yes');
-	await expect(sent).not.toContainText('Camera focused at');
 });
 
 test('it hides the mirror controls, so only the test drives the picture', async ({ page }) => {

@@ -106,12 +106,6 @@ export interface Step {
 	 */
 	startClosed?: true;
 	/**
-	 * The card is being put at a distance on this step, so the step bar shows
-	 * how far the camera says it is focused, on a phone that reports it.
-	 * See `focus.ts` for why the guided test is allowed to.
-	 */
-	focusAid?: true;
-	/**
 	 * A file the tester needs, shown as a button with a line saying what it is
 	 * for. It opens in a new tab rather than downloading: hard rule 1 allows no
 	 * download feature, and a PDF viewer prints it just the same.
@@ -214,7 +208,6 @@ export const STEPS: Step[] = [
 		id: 'card-best',
 		title: 'Card, high resolution',
 		needsCamera: true,
-		focusAid: true,
 		zoom: 5,
 		resolution: 'settled',
 		ifNotRaised: { kind: 'retitle', title: 'Card' },
@@ -232,7 +225,6 @@ export const STEPS: Step[] = [
 		id: 'card-base',
 		title: 'Card, 1920×1080',
 		needsCamera: true,
-		focusAid: true,
 		zoom: 5,
 		resolution: 'base',
 		ifNotRaised: {
@@ -247,7 +239,6 @@ export const STEPS: Step[] = [
 		id: 'light',
 		title: 'Light',
 		needsCamera: true,
-		focusAid: true,
 		zoom: 1,
 		light: 'bright',
 		resolution: 'settled',

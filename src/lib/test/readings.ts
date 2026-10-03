@@ -21,10 +21,6 @@ export interface Snapshot {
 	devicePixelRatio: number;
 	wakeLockStatus: string;
 	userAgent: string;
-	/** How far the camera says it is focused, in metres, or null when it does not say. */
-	focusDistance: number | null;
-	/** Whether the camera offers a focus distance at all. */
-	focusReported: boolean;
 }
 
 /** Trailing zeros go, but only after a decimal point — 60 must not become 6. */
@@ -67,8 +63,7 @@ export function deviceReadings(s: Snapshot): Reading[] {
 			value: `${size(s.trackWidth, s.trackHeight)} (${PROBE_OUTCOME[s.upgradeState] ?? s.upgradeState})`
 		},
 		{ label: 'Frames per second it counted', value: round(s.probedFps, 1) },
-		{ label: 'Screen kept awake', value: s.wakeLockStatus },
-		{ label: 'Reports how far it is focused', value: s.focusReported ? 'yes' : 'no' }
+		{ label: 'Screen kept awake', value: s.wakeLockStatus }
 	];
 }
 
@@ -81,18 +76,6 @@ export function detailReading(stepTitle: string, s: Snapshot): Reading {
 	return {
 		label: `Camera detail per screen pixel — ${stepTitle.toLowerCase()}, ${round(s.zoom)}× magnified, ${size(s.trackWidth, s.trackHeight)}`,
 		value: round(s.sourcePerDevicePx)
-	};
-}
-
-/**
- * What the camera said about its focus when the tester answered, on a step
- * where it said anything. Null otherwise, so most phones get no line at all.
- */
-export function focusReading(stepTitle: string, s: Snapshot): Reading | null {
-	if (s.focusDistance === null) return null;
-	return {
-		label: `Camera focused at — ${stepTitle.toLowerCase()}`,
-		value: `${Math.round(s.focusDistance * 100)} cm`
 	};
 }
 
