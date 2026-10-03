@@ -15,15 +15,21 @@ export const answerKey = (q: Question) => (q.unit ? `${q.name}_${q.unit}` : q.na
 
 /**
  * The value sent for an answer. A picked option sends the value it carries. A
- * number typed in is sent as a number, forgiving a % sign or a decimal comma.
- * Anything that does not fit is sent as typed rather than lost. Blank is null.
+ * number typed in is sent as a number, forgiving a % sign or a unit after it
+ * ("35 cm") and a decimal comma. Anything that does not fit is sent as typed
+ * rather than lost. Blank is null.
  */
 export function answerValue(q: Question, raw: string | undefined): Value {
 	const text = raw?.trim() ?? '';
 	if (!text) return null;
 	if (q.kind === 'choice') return q.options.find((o) => o.label === text)?.value ?? text;
 	if (q.numeric) {
-		const n = Number(text.replace('%', '').replace(',', '.').trim());
+		const n = Number(
+			text
+				.replace(/\s*(%|[a-z]+)$/i, '')
+				.replace(',', '.')
+				.trim()
+		);
 		return Number.isFinite(n) ? n : text;
 	}
 	return text;

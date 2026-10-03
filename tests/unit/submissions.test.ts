@@ -29,13 +29,13 @@ describe('flatten', () => {
 		expect(
 			flatten({
 				version: 1,
-				answers: { batteryBefore_pct: 78, sharp: true, flickerWhat: null },
+				answers: { batteryBefore_pct: 78, textSharp_mm: 1.5, flickerWhat: null },
 				start: { changes: [{ atS: 0.1 }, { atS: 2.1 }] }
 			})
 		).toEqual({
 			version: '1',
 			'answers.batteryBefore_pct': '78',
-			'answers.sharp': 'true',
+			'answers.textSharp_mm': '1.5',
 			'answers.flickerWhat': '',
 			'start.changes.1.atS': '0.1',
 			'start.changes.2.atS': '2.1'
@@ -50,7 +50,7 @@ describe('flatten', () => {
 describe('convert', () => {
 	const run = {
 		version: 1,
-		answers: { phone: 'iPhone 14 Pro, iOS 26', sharp: true },
+		answers: { phone: 'iPhone 14 Pro, iOS 26', textSharp_mm: 1.5 },
 		start: { changes: [{ atS: 0.1, pauseS: 0.15 }] }
 	};
 	const exported = [
@@ -65,7 +65,7 @@ describe('convert', () => {
 			'phone',
 			'version',
 			'answers.phone',
-			'answers.sharp',
+			'answers.textSharp_mm',
 			'start.changes.1.atS',
 			'start.changes.1.pauseS'
 		]);
@@ -74,7 +74,7 @@ describe('convert', () => {
 			'iPhone',
 			'1',
 			'iPhone 14 Pro, iOS 26',
-			'true',
+			'1.5',
 			'0.1',
 			'0.15'
 		]);

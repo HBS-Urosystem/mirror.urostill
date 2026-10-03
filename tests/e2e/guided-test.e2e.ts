@@ -546,7 +546,9 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 	expect(summary).toContain('did it flicker, jump, go black or freeze?');
 	// The optional box was left empty, and says so rather than looking skipped.
 	expect(summary).toContain('how many times? Leave blank if it did not.: (left blank)');
-	expect(summary).toContain('Is there a distance where the text is sharp?: yes');
+	expect(summary).toContain('Smallest line you can get sharp: 1.00 mm');
+	// The magnification it was answered at, without asking.
+	expect(summary).toContain('card, 5× magnified');
 	// And the numbers nobody had to copy down.
 	expect(summary).toContain('Measured by the app');
 	expect(summary).toContain('Camera can do at most');
@@ -561,7 +563,8 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 		phone: 'A particular phone',
 		flicker: true,
 		flickerWhat: null,
-		sharp: true,
+		textSharp_mm: 1,
+		sharpestAt_cm: 42,
 		lightDark: 1,
 		lightRoom: 1,
 		batteryBefore_pct: 42,
@@ -574,6 +577,7 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 		notes: null
 	});
 	expect(data.camera.outcome).toBe('fellback');
+	expect(data.detail.card).toMatchObject({ zoom: 5, width: 1920, height: 1080 });
 	expect(data.start.changes).toHaveLength(2);
 	expect(data.countdown).toMatchObject({ screenStayedOn: true, stoppedEarly: true });
 
@@ -585,7 +589,7 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 	].join('\n');
 	const [header, row] = parseCsv(convert(exported));
 	const column = (name: string) => row[header.indexOf(name)];
-	expect(column('answers.sharp')).toBe('true');
+	expect(column('answers.textSharp_mm')).toBe('1');
 	expect(column('answers.batteryAfter_pct')).toBe('42');
 	expect(column('start.changes.2.toWidth')).toBe('1920');
 	expect(header).not.toContain('summary');

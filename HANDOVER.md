@@ -37,9 +37,9 @@ All of the above works on the computer it was built on, and on the one iPhone
 it has been tried on. The following has to be checked on as many phones as
 possible, of different makes, models and ages:
 
-- **Whether the picture can be sharp.** Front cameras differ a great deal.
-  Whether there is a distance at which the picture is sharp, magnified five
-  times, can only be seen on each phone.
+- **How sharp the picture can be.** Front cameras differ a great deal. How
+  small a text can be made sharp, magnified five times, and at what distance,
+  can only be seen on each phone.
 - **Whether the screen gives enough light.** That depends on the screen and the
   room.
 - **What it costs to run.** Battery use and heat over ten minutes, and whether
@@ -67,6 +67,8 @@ You need:
 
 - the printed test card. The test's first step has it as a PDF;
 - something to stand the card on, and something to stand the phone on;
+- a tape measure. Lay it on the table from the phone towards the card and
+  leave it there: the card step asks how far the card is;
 - a room you can darken.
 
 **Do not reload the page.** Nothing is stored, so a reload loses every answer.
@@ -91,11 +93,14 @@ everything it will send, and sends it in one go.
    keep. If people notice it, it has to happen differently, or not at all.
 
 3. **Card.** Magnified five times, at the best resolution the app uses on that
-   phone: moving the card nearer and further, is there a distance where the
-   text is sharp? The card then stays where the text looks sharpest.
+   phone: moving the card nearer and further, the smallest line of text that can
+   be made sharp, from the 1 to 4 mm lines on the card, or none of them, and how
+   far the card is from the phone where the text is sharpest. The app records
+   the magnification it was answered at. The card then stays where it is.
 
-   **What for:** whether the phone gives a sharp picture at the maximum
-   magnification, now five times. If no distance does, the maximum comes down.
+   **What for:** how much detail the phone shows at the maximum magnification,
+   now five times, and at what distance. If even the large lines cannot be made
+   sharp, the maximum comes down.
 
 4. **Light.** With the light frame at its brightest, and the card where the
    last step left it: is there enough light on the card in a dark room, and then

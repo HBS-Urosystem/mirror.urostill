@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { counterText, isLastStep, raisedFrom, STEPS } from '../../src/lib/test/protocol';
+import {
+	counterText,
+	isLastStep,
+	raisedFrom,
+	STEPS,
+	TEXT_HEIGHTS
+} from '../../src/lib/test/protocol';
 import {
 	formatReport,
 	readingsInOrder,
@@ -55,10 +61,20 @@ describe('protocol', () => {
 		for (const s of STEPS) if (s.zoom !== undefined) expect(s.zoom).toBeLessThanOrEqual(5);
 	});
 
-	it('asks one thing about the card, magnified to the most: whether some distance gives sharp text', () => {
+	it('asks about the card, magnified to the most: the smallest line made sharp, and how far', () => {
 		const card = STEPS.find((s) => s.id === 'card')!;
 		expect(card.zoom).toBe(5);
-		expect(card.questions.map((q) => q.name)).toEqual(['sharp']);
+		expect(card.questions.map((q) => q.name)).toEqual(['textSharp', 'sharpestAt']);
+		const distance = card.questions[1];
+		expect(distance.kind === 'text' && distance.numeric && distance.unit).toBe('cm');
+	});
+
+	it('offers every text size printed on the card, and none of them', () => {
+		const [sizes] = STEPS.find((s) => s.id === 'card')!.questions;
+		expect(sizes.kind === 'choice' && sizes.options.map((o) => o.label)).toEqual([
+			...TEXT_HEIGHTS.map((h) => `${h} mm`),
+			'none of them'
+		]);
 	});
 
 	it('asks how hard it was to put the picture back after a nudge, with nothing else to pick', () => {
@@ -194,7 +210,7 @@ describe('formatReport', () => {
 
 	it('keeps an unanswered question in, rather than hiding the gap', () => {
 		const text = formatReport(STEPS, report);
-		expect(text).toContain('Is there a distance where the text is sharp?: (not answered)');
+		expect(text).toContain('Smallest line you can get sharp: (not answered)');
 	});
 
 	it('carries the answers and the measurements', () => {
@@ -220,14 +236,14 @@ describe('readingsInOrder', () => {
 	const reading = (label: string) => ({ label, value: '1' });
 
 	it('lists the readings in the order of the steps, not the order they were taken', () => {
-		const byStep = { 'card': [reading('card')], start: [reading('camera')] };
+		const byStep = { card: [reading('card')], start: [reading('camera')] };
 		expect(readingsInOrder(STEPS, byStep).map((r) => r.label)).toEqual(['camera', 'card']);
 	});
 
 	it('holds one set per step, so a step measured again is listed once', () => {
 		let byStep: Record<string, ReturnType<typeof reading>[]> = {};
-		byStep = { ...byStep, 'card': [reading('first time')] };
-		byStep = { ...byStep, 'card': [reading('second time')] };
+		byStep = { ...byStep, card: [reading('first time')] };
+		byStep = { ...byStep, card: [reading('second time')] };
 		expect(readingsInOrder(STEPS, byStep).map((r) => r.label)).toEqual(['second time']);
 	});
 
@@ -280,11 +296,11 @@ describe('submissionBody', () => {
 	});
 
 	it('sends the data for analysis next to the readable summary', () => {
-		const data = JSON.stringify({ version: 1, answers: { sharp: true } });
+		const data = JSON.stringify({ version: 1, answers: { textSharp_mm: 1.5 } });
 		const body = new URLSearchParams(submissionBody('f', 'p', 's', data));
 		expect(JSON.parse(body.get('data')!)).toEqual({
 			version: 1,
-			answers: { sharp: true }
+			answers: { textSharp_mm: 1.5 }
 		});
 	});
 

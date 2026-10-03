@@ -41,7 +41,8 @@ describe('the keys answers are sent under', () => {
 	it('put the unit in the key, so a column says what it holds', () => {
 		expect(answerKey(question('batteryBefore'))).toBe('batteryBefore_pct');
 		expect(answerKey(question('batteryAfter'))).toBe('batteryAfter_pct');
-		expect(answerKey(question('sharp'))).toBe('sharp');
+		expect(answerKey(question('textSharp'))).toBe('textSharp_mm');
+		expect(answerKey(question('sharpestAt'))).toBe('sharpestAt_cm');
 	});
 
 	it('are all different, across the whole test', () => {
@@ -53,24 +54,28 @@ describe('the keys answers are sent under', () => {
 describe('the values answers are sent as', () => {
 	it('come from the option picked, not its wording', () => {
 		expect(answerValue(question('lightDark'), '2 — usable')).toBe(2);
-		expect(answerValue(question('sharp'), 'yes')).toBe(true);
-		expect(answerValue(question('sharp'), 'no')).toBe(false);
+		expect(answerValue(question('textSharp'), '1.25 mm')).toBe(1.25);
+		expect(answerValue(question('handChanged'), 'yes')).toBe(true);
+		expect(answerValue(question('handChanged'), 'no')).toBe(false);
 		expect(answerValue(question('driftAlone'), 'moved a little')).toBe('little');
 		expect(answerValue(question('driftNudge'), 'annoying')).toBe('annoying');
 		expect(answerValue(question('warmth'), 'warm')).toBe('warm');
 	});
 
 	it('tell an answer of "none" apart from no answer at all', () => {
+		expect(answerValue(question('textSharp'), 'none of them')).toBe('none');
 		expect(answerValue(question('driftAlone'), 'not moved')).toBe('none');
 		expect(answerValue(question('driftAlone'), undefined)).toBeNull();
 		expect(answerValue(question('driftAlone'), '  ')).toBeNull();
 	});
 
-	it('read a typed number as a number, forgiving a % sign or a decimal comma', () => {
+	it('read a typed number as a number, forgiving a % sign, a unit or a decimal comma', () => {
 		const battery = question('batteryBefore');
 		expect(answerValue(battery, '78')).toBe(78);
 		expect(answerValue(battery, ' 78 % ')).toBe(78);
 		expect(answerValue(battery, '7,5')).toBe(7.5);
+		expect(answerValue(question('sharpestAt'), '35 cm')).toBe(35);
+		expect(answerValue(question('sharpestAt'), '35cm')).toBe(35);
 	});
 
 	it('keep what was typed when it is not a number, rather than lose it', () => {
@@ -97,9 +102,9 @@ describe('runData', () => {
 	});
 
 	it('files every question, the ones before the countdown included, answered or not', () => {
-		const data = runData(input({ answers: { sharp: 'yes', batteryBefore: '78' } }));
+		const data = runData(input({ answers: { textSharp: '1.50 mm', batteryBefore: '78' } }));
 		expect(Object.keys(data.answers)).toHaveLength(allQuestions.length);
-		expect(data.answers.sharp).toBe(true);
+		expect(data.answers.textSharp_mm).toBe(1.5);
 		expect(data.answers.batteryBefore_pct).toBe(78);
 		expect(data.answers.lightDark).toBeNull();
 	});

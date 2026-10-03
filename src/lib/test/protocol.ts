@@ -97,6 +97,12 @@ export interface Step {
 	link?: { href: string; label: string; note: string };
 }
 
+/** The cap heights printed on the card, smallest first. */
+export const TEXT_HEIGHTS = ['1.00', '1.25', '1.50', '2.00', '2.50', '3.00', '4.00'];
+
+/** 'none' rather than null: not one line made sharp is an answer, unlike a blank. */
+const NONE: Option = { label: 'none of them', value: 'none' };
+
 const yesNo = (name: string, label: string): Choice => ({
 	kind: 'choice',
 	name,
@@ -164,16 +170,36 @@ export const STEPS: Step[] = [
 	{
 		// At the best resolution the app uses on this phone: the starting step held
 		// the tester until the camera had settled on it. Magnified to the most the
-		// mirror allows, because that is where a soft picture shows first.
+		// mirror allows, because that is where a soft picture shows first. A pinch
+		// can still change it, so the magnification is recorded with the answer:
+		// the snapshot taken when Next is pressed.
 		id: 'card',
 		title: 'Card',
 		needsCamera: true,
 		zoom: 5,
 		instructions: [
 			'The picture is magnified five times. Drag it to see the text, then move the card slowly nearer and further.',
-			'Leave the card where the text looks sharpest.'
+			'Leave the card where the text looks sharpest, and read the distance off the tape measure.'
 		],
-		questions: [yesNo('sharp', 'Is there a distance where the text is sharp?')]
+		questions: [
+			{
+				kind: 'choice',
+				name: 'textSharp',
+				unit: 'mm',
+				label: 'Smallest line you can get sharp',
+				options: [...TEXT_HEIGHTS.map((h) => ({ label: `${h} mm`, value: Number(h) })), NONE]
+			},
+			// Without it the line size says little: the nearer the card, the bigger
+			// the text in the picture.
+			{
+				kind: 'text',
+				name: 'sharpestAt',
+				label: 'Distance from the card to the phone where the text is sharpest, in cm',
+				placeholder: '35',
+				numeric: true,
+				unit: 'cm'
+			}
+		]
 	},
 	{
 		id: 'light',
