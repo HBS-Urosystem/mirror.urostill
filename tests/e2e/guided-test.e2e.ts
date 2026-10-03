@@ -217,6 +217,40 @@ test('the camera starts with the panel out of the way, and the bar brings it bac
 	await expect(stepTitle(page)).toHaveText('Starting the camera');
 });
 
+test('on an iPhone in Safari, the whole first step is in view without scrolling', async ({
+	page
+}) => {
+	// An iPhone 14 Pro in portrait leaves 393 × 660 to the page under Safari's toolbars.
+	await page.setViewportSize({ width: 393, height: 660 });
+	await page.goto('/test');
+	await expect(stepTitle(page)).toBeVisible();
+
+	const fullyInView = (name: string, locator: ReturnType<Page['locator']>) =>
+		locator.evaluate((el, name) => {
+			const r = el.getBoundingClientRect();
+			let box = { top: 0, bottom: window.innerHeight };
+			// Inside a scrolling area, in view means inside that area as well.
+			for (let up = el.parentElement; up; up = up.parentElement) {
+				const style = getComputedStyle(up);
+				if (/(auto|scroll)/.test(style.overflowY)) {
+					const b = up.getBoundingClientRect();
+					box = { top: Math.max(box.top, b.top), bottom: Math.min(box.bottom, b.bottom) };
+				}
+			}
+			return r.top >= box.top && r.bottom <= box.bottom ? 'in view' : `${name} is cut off`;
+		}, name);
+
+	expect(await fullyInView('the title', stepTitle(page))).toBe('in view');
+	expect(
+		await fullyInView('the card button', page.getByRole('link', { name: 'Test card (PDF)' }))
+	).toBe('in view');
+	expect(await fullyInView('the phone field', page.getByRole('textbox'))).toBe('in view');
+	expect(
+		await fullyInView('the warning', page.getByText('Watch the picture for the first few seconds'))
+	).toBe('in view');
+	expect(await fullyInView('Next', page.getByRole('button', { name: 'Next' }))).toBe('in view');
+});
+
 test('the first step links to the test card, which opens in a new tab to print', async ({
 	page,
 	request
@@ -277,15 +311,15 @@ test('it puts the picture at the magnification each step asks for', async ({ pag
 	expect((await view(page)).scale / atOne).toBeCloseTo(3, 1);
 });
 
-test('the panel is never more than half the screen, and only a bar while the countdown runs', async ({
+test('with the camera running, the panel is never more than half the screen, and only a bar while the countdown runs', async ({
 	page
 }) => {
 	await page.setViewportSize({ width: 390, height: 700 });
 	const half = 350;
 	const height = async () => (await panel(page).boundingBox())!.height;
 
+	// Before the camera starts there is no picture to keep in view.
 	await page.goto('/test');
-	expect(await height()).toBeLessThanOrEqual(half);
 	await page.getByRole('textbox').fill('Test phone');
 	await advance(page);
 

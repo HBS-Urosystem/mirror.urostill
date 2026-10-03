@@ -212,8 +212,12 @@
 	const finishing = $derived(
 		isLastStep(index, steps) && (waitPhase === null || waitPhase === 'over')
 	);
-	/** No camera picture behind the panel, so the space above it can carry the step's instructions. */
-	const roomAbove = $derived(!cameraOn && !sent);
+	/**
+	 * No camera picture yet, so there is nothing for the panel to keep in view:
+	 * it takes the whole screen. Kept to half, it squeezed the first step's
+	 * question into a strip a few lines high on an iPhone, under Safari's toolbar.
+	 */
+	const noPicture = $derived(!cameraOn && !sent);
 	/** Open: the bottom half of the screen. Closed: only the top bar, as while the countdown runs. */
 	const sheetOpen = $derived(sent || (panelOpen && waitPhase !== 'running'));
 
@@ -492,22 +496,10 @@
 		/>
 	{/if}
 
-	{#if roomAbove}
-		<!--
-			No picture yet, so the top half of the screen is free: the step's
-			instructions and its link go there, and the panel keeps to its half with
-			room for the question, the warning and the button.
-		-->
-		<div
-			class="fixed inset-x-0 top-0 flex h-[50dvh] flex-col justify-center px-5 pt-[env(safe-area-inset-top)]"
-		>
-			<div class="mx-auto w-full max-w-prose space-y-3">{@render guidance()}</div>
-		</div>
-	{/if}
-
 	<!--
-		The panel is never more than the bottom half of the screen, so the picture
-		above it stays in view. Open, it is exactly half on every step, so the line
+		With the camera running, the panel is never more than the bottom half of
+		the screen, so the picture above it stays in view. Open, it is exactly
+		half on every step, so the line
 		where it starts is a fixed mark on the picture: the ten-minute step uses
 		that line to tell whether the picture has moved. While the countdown runs
 		it is only its top bar, and the phone shows the mirror as it is normally
@@ -516,8 +508,10 @@
 		battery being measured.
 	-->
 	<section
-		class="fixed inset-x-0 bottom-0 z-20 flex flex-col pb-[env(safe-area-inset-bottom)] shadow-2xl"
-		class:h-[50dvh]={sheetOpen}
+		class="fixed inset-x-0 bottom-0 z-20 flex flex-col pb-[env(safe-area-inset-bottom)] shadow-2xl {noPicture
+			? 'top-0 pt-[env(safe-area-inset-top)]'
+			: ''}"
+		class:h-[50dvh]={sheetOpen && !noPicture}
 		class:bg-porcelain={!step.darkSheet}
 		class:sheet-dark={step.darkSheet}
 	>
@@ -575,9 +569,7 @@
 						{step.title}
 					</h2>
 
-					{#if !roomAbove}
-						<div class="mt-2 space-y-3">{@render guidance()}</div>
-					{/if}
+					<div class="mt-2 space-y-3">{@render guidance()}</div>
 
 					{#if cameraError}
 						<p class="mt-4 text-note text-error">{cameraError}</p>
