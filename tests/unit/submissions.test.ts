@@ -29,29 +29,28 @@ describe('flatten', () => {
 		expect(
 			flatten({
 				version: 1,
-				answers: { barsBest_mm: 0.3, sharp30: true, textBest_mm: null },
+				answers: { batteryBefore_pct: 78, sharp: true, flickerWhat: null },
 				start: { changes: [{ atS: 0.1 }, { atS: 2.1 }] }
 			})
 		).toEqual({
 			version: '1',
-			'answers.barsBest_mm': '0.3',
-			'answers.sharp30': 'true',
-			'answers.textBest_mm': '',
+			'answers.batteryBefore_pct': '78',
+			'answers.sharp': 'true',
+			'answers.flickerWhat': '',
 			'start.changes.1.atS': '0.1',
 			'start.changes.2.atS': '2.1'
 		});
 	});
 
 	it('puts a list of plain values in one cell', () => {
-		expect(flatten({ skipped: ['card-base', 'other'] })).toEqual({ skipped: 'card-base; other' });
+		expect(flatten({ list: ['one', 'two'] })).toEqual({ list: 'one; two' });
 	});
 });
 
 describe('convert', () => {
 	const run = {
 		version: 1,
-		skipped: ['card-base'],
-		answers: { phone: 'iPhone 14 Pro, iOS 26', barsBest_mm: 0.3 },
+		answers: { phone: 'iPhone 14 Pro, iOS 26', sharp: true },
 		start: { changes: [{ atS: 0.1, pauseS: 0.15 }] }
 	};
 	const exported = [
@@ -65,9 +64,8 @@ describe('convert', () => {
 			'created_at',
 			'phone',
 			'version',
-			'skipped',
 			'answers.phone',
-			'answers.barsBest_mm',
+			'answers.sharp',
 			'start.changes.1.atS',
 			'start.changes.1.pauseS'
 		]);
@@ -75,9 +73,8 @@ describe('convert', () => {
 			'2026-10-03T10:00:00Z',
 			'iPhone',
 			'1',
-			'card-base',
 			'iPhone 14 Pro, iOS 26',
-			'0.3',
+			'true',
 			'0.1',
 			'0.15'
 		]);

@@ -51,19 +51,6 @@ export interface FreeText {
 
 export type Question = Choice | FreeText;
 
-/**
- * How a step changes on a phone whose camera did not keep a higher resolution
- * than it started with. Left as it is, the "high resolution" steps would run at
- * the starting resolution under a title that says otherwise, and the 1920×1080
- * round would measure the same thing a second time.
- *
- * The tester is not told why. What the camera did is a result, and results
- * belong in the report, not on the screen of the person producing them. The
- * step counter only shows that steps were passed over, so the jump in its
- * number does not look like a mistake.
- */
-export type IfNotRaised = { kind: 'skip'; reason: string } | { kind: 'retitle'; title: string };
-
 export interface Step {
 	id: string;
 	title: string;
@@ -74,8 +61,6 @@ export interface Step {
 	zoom?: number;
 	/** The app sets the light to this before asking. */
 	light?: HaloLevel;
-	/** The app puts the camera at this resolution before asking. */
-	resolution?: 'settled' | 'base';
 	/** The camera is needed from this step onwards. */
 	needsCamera?: boolean;
 	/**
@@ -93,7 +78,6 @@ export interface Step {
 	 * to do while the next step is arriving rather than after it has.
 	 */
 	before?: string;
-	ifNotRaised?: IfNotRaised;
 	/**
 	 * The panel is dark on this step. A light panel is a lamp in its own right,
 	 * and on the light step it would add to the light being judged.
@@ -112,30 +96,6 @@ export interface Step {
 	 */
 	link?: { href: string; label: string; note: string };
 }
-
-/** The bar widths printed on the card, finest first. */
-export const BAR_WIDTHS = ['0.15', '0.20', '0.25', '0.30', '0.40', '0.50', '0.75', '1.00'];
-/** The cap heights printed on the card, smallest first. */
-export const TEXT_HEIGHTS = ['1.00', '1.25', '1.50', '2.00', '2.50', '3.00', '4.00'];
-
-/** 'none' rather than null: not one group resolved is an answer, unlike a blank. */
-const NONE: Option = { label: 'none of them', value: 'none' };
-
-const barQuestion = (name: string): Choice => ({
-	kind: 'choice',
-	name,
-	unit: 'mm',
-	label: 'Finest group where you can still see three separate bars',
-	options: [...BAR_WIDTHS.map((w) => ({ label: `${w} mm`, value: Number(w) })), NONE]
-});
-
-const textQuestion = (name: string): Choice => ({
-	kind: 'choice',
-	name,
-	unit: 'mm',
-	label: 'Smallest line you can read without guessing',
-	options: [...TEXT_HEIGHTS.map((h) => ({ label: `${h} mm`, value: Number(h) })), NONE]
-});
 
 const yesNo = (name: string, label: string): Choice => ({
 	kind: 'choice',
@@ -166,7 +126,7 @@ export const STEPS: Step[] = [
 		link: {
 			href: '/testcard.pdf',
 			label: 'Test card (PDF)',
-			note: 'The test needs this card printed at 100 %, with "fit to page" off. Its ruler must measure 50 mm.'
+			note: 'The test needs this card, printed.'
 		},
 		questions: [
 			{
@@ -186,7 +146,6 @@ export const STEPS: Step[] = [
 		needsCamera: true,
 		startClosed: true,
 		zoom: 1,
-		resolution: 'settled',
 		instructions: [],
 		questions: [
 			yesNo(
@@ -203,37 +162,18 @@ export const STEPS: Step[] = [
 		]
 	},
 	{
-		// One setup, so one step: the card at 35 cm for the bars and the text, then
-		// moved nearer and further for the focus, each answered as it is seen.
-		id: 'card-best',
-		title: 'Card, high resolution',
+		// At the best resolution the app uses on this phone: the starting step held
+		// the tester until the camera had settled on it. Magnified to the most the
+		// mirror allows, because that is where a soft picture shows first.
+		id: 'card',
+		title: 'Card',
 		needsCamera: true,
 		zoom: 5,
-		resolution: 'settled',
-		ifNotRaised: { kind: 'retitle', title: 'Card' },
 		instructions: [
-			'Stand the card and the phone 35 cm apart, the card evenly lit. Drag the picture to see the bars, then the text.'
+			'The picture is magnified five times. Drag it to see the text, then move the card slowly nearer and further.',
+			'Leave the card where the text looks sharpest.'
 		],
-		questions: [
-			barQuestion('barsBest'),
-			textQuestion('textBest'),
-			yesNo('sharp30', 'Bring the card to 30 cm. Is the text as sharp as at 35 cm?'),
-			yesNo('sharp45', 'Now take it to 45 cm. Is the text as sharp as at 35 cm?')
-		]
-	},
-	{
-		id: 'card-base',
-		title: 'Card, 1920×1080',
-		needsCamera: true,
-		zoom: 5,
-		resolution: 'base',
-		ifNotRaised: {
-			kind: 'skip',
-			reason:
-				'the camera did not keep a higher resolution, so the first card step was already at this resolution.'
-		},
-		instructions: ['Card back at 35 cm.'],
-		questions: [barQuestion('barsBase'), textQuestion('textBase')]
+		questions: [yesNo('sharp', 'Is there a distance where the text is sharp?')]
 	},
 	{
 		id: 'light',
@@ -241,9 +181,8 @@ export const STEPS: Step[] = [
 		needsCamera: true,
 		zoom: 1,
 		light: 'bright',
-		resolution: 'settled',
 		darkSheet: true,
-		instructions: ['Card at 35 cm.'],
+		instructions: ['Leave the card where it is.'],
 		questions: [
 			{
 				kind: 'choice',
@@ -263,14 +202,15 @@ export const STEPS: Step[] = [
 		// The phone stays on its stand facing the card for the whole step, so the
 		// ten minutes also show whether the picture drifts when nothing moves —
 		// and the checks that need the phone touched come after, in that order.
+		// The open panel is exactly half the screen, so the line just above it is
+		// the middle of the screen: the mark both drift questions go by.
 		id: 'ten-minutes',
 		title: 'Ten minutes',
 		needsCamera: true,
 		zoom: 3,
-		resolution: 'settled',
 		waitSeconds: 600,
 		instructions: [
-			'Leave the phone on its stand, facing the card, and note which part of the card is just above this panel. Do not touch the phone while the countdown runs.'
+			'Leave the phone on its stand, facing the card, and note which part of the card is in the middle of the screen, just above this panel. Do not touch the phone while the countdown runs.'
 		],
 		beforeWait: [
 			{
@@ -306,12 +246,9 @@ export const STEPS: Step[] = [
 			{
 				kind: 'choice',
 				name: 'driftNudge',
-				label: 'Nudge the stand by about a centimetre. Getting back to what you were looking at is',
-				options: [
-					{ label: 'not needed', value: 'not-needed' },
-					{ label: 'easy', value: 'easy' },
-					{ label: 'annoying', value: 'annoying' }
-				]
+				label:
+					'Nudge the stand by about a centimetre, then drag the picture until the part of the card that was in the middle is back in the middle. That was',
+				options: plain('easy', 'annoying')
 			},
 			yesNo('handChanged', 'Hold a hand in the middle of the picture. Does anything change?'),
 			{
@@ -351,35 +288,11 @@ export function raisedFrom(state: UpgradeState): boolean | null {
 	return null;
 }
 
-/** The steps as this phone should see them: retitled where the resolution was not raised. */
-export function adaptSteps(steps: Step[], raised: boolean | null): Step[] {
-	if (raised !== false) return steps;
-	return steps.map((step) => {
-		const change = step.ifNotRaised;
-		return change?.kind === 'retitle' ? { ...step, title: change.title } : step;
-	});
-}
-
-/**
- * The step counter. It counts against the whole protocol, so its total never
- * changes under the tester. Once steps have been passed over it says how many,
- * which is what explains the jump in the step number at that moment — and only
- * from that moment: before the jump there is nothing skipped yet to mention.
- */
-export function counterText(
-	currentId: string,
-	raised: boolean | null,
-	steps: Step[] = STEPS
-): string {
+/** The step counter: this step's place in the test, out of all its steps. */
+export function counterText(currentId: string, steps: Step[] = STEPS): string {
 	const position = Math.max(
 		0,
 		steps.findIndex((s) => s.id === currentId)
 	);
-	const skipped = steps.slice(0, position).filter((s) => skipReason(s, raised) !== null).length;
-	return `Step ${position + 1} of ${steps.length}${skipped > 0 ? ` (${skipped} skipped)` : ''}`;
-}
-
-/** Why this step is left out on this phone, or `null` when it is not. */
-export function skipReason(step: Step, raised: boolean | null): string | null {
-	return raised === false && step.ifNotRaised?.kind === 'skip' ? step.ifNotRaised.reason : null;
+	return `Step ${position + 1} of ${steps.length}`;
 }

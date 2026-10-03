@@ -32,11 +32,6 @@ const W = 210;
 const H = 297;
 const MARGIN = 15;
 
-/** Bar widths in mm. A group is three bars with gaps of the same width. */
-const BAR_WIDTHS = [0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.75, 1.0];
-const BAR_LENGTH = 12;
-const CELL = 21;
-
 /** Cap heights in mm. Arial's cap height is about 0.716 of its font size. */
 const CAP_HEIGHTS = [1, 1.25, 1.5, 2, 2.5, 3, 4];
 const CAP_RATIO = 0.716;
@@ -84,73 +79,24 @@ for (let mm = 0; mm <= 50; mm += 10) {
 }
 add(text(MARGIN + 56, rulerY + 1, 2.2, '50 mm'));
 
-/** Three bars and two gaps, all of width `w`. */
-function barGroup(cx, cy, w, vertical) {
-	const span = 5 * w;
-	const out = [];
-	for (let i = 0; i < 3; i++) {
-		const offset = -span / 2 + i * 2 * w;
-		out.push(
-			vertical
-				? `<rect x="${(cx + offset).toFixed(3)}" y="${cy - BAR_LENGTH / 2}" width="${w}" height="${BAR_LENGTH}"/>`
-				: `<rect x="${cx - BAR_LENGTH / 2}" y="${(cy + offset).toFixed(3)}" width="${BAR_LENGTH}" height="${w}"/>`
-		);
-	}
-	return out;
-}
+// Text lines, from small to large: the guided test asks whether the text is
+// sharp at some distance, and the small lines are where a soft picture shows.
+add(text(MARGIN, 60, 2.8, 'Text', 'font-weight="700"'));
 
-// Resolution chart
-add(text(MARGIN, 60, 2.8, 'Resolution chart', 'font-weight="700"'));
-add(
-	text(MARGIN, 65, 2, 'Report the finest group where three separate bars are still visible, in mm.')
-);
-
-const chartLeft = (W - BAR_WIDTHS.length * CELL) / 2 + CELL / 2;
-const rows = [
-	{ y: 80, vertical: true, label: 'vertical bars — horizontal detail' },
-	{ y: 112, vertical: false, label: 'horizontal bars — vertical detail' }
-];
-for (const row of rows) {
-	add(text(MARGIN, row.y - 10, 2, row.label));
-	BAR_WIDTHS.forEach((w, i) => {
-		const cx = chartLeft + i * CELL;
-		add(...barGroup(cx, row.y, w, row.vertical));
-		add(text(cx, row.y + 11, 2, w.toFixed(2), 'text-anchor="middle"'));
-	});
-}
-
-// Text lines
-add(text(MARGIN, 140, 2.8, 'Text', 'font-weight="700"'));
-add(
-	text(
-		MARGIN,
-		145,
-		2,
-		'Report the smallest line that can be read without guessing, by its cap height in mm.'
-	)
-);
-
-let y = 156;
+let y = 71;
 for (const cap of CAP_HEIGHTS) {
 	add(text(MARGIN, y, 2, `${cap.toFixed(2)} mm`));
 	add(text(MARGIN + 22, y, cap, SPECIMEN));
 	y += cap + 7;
 }
 
-add(
-	text(
-		MARGIN,
-		y + 8,
-		2,
-		'Keep the card flat and evenly lit, and measure the distance from the card to the phone.'
-	)
-);
+add(text(MARGIN, y + 8, 2, 'Keep the card flat and evenly lit.'));
 
 add(`</g>`, `</svg>`, '');
 
 const out = fileURLToPath(new URL(`../docs/${OUT_NAME}`, import.meta.url));
 writeFileSync(out, parts.join('\n'));
 console.log(
-	`wrote docs/${OUT_NAME} at ${SCALE}× (${BAR_WIDTHS.length} bar groups, ${CAP_HEIGHTS.length} text lines)`
+	`wrote docs/${OUT_NAME} at ${SCALE}× (${CAP_HEIGHTS.length} text lines)`
 );
 if (SCALE !== 1) console.log('Check the ruler against a real one before using it.');

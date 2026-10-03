@@ -126,6 +126,21 @@ async function cameraThatKeepsUp(page: Page) {
 	});
 }
 
+/**
+ * A camera that takes four seconds over every change of resolution, as a slow
+ * phone can. Chromium's synthetic camera changes at once, and on an idle
+ * machine its whole probe could be over before the test looked for the hold.
+ */
+async function cameraSlowToChange(page: Page) {
+	await page.addInitScript(() => {
+		const apply = MediaStreamTrack.prototype.applyConstraints;
+		MediaStreamTrack.prototype.applyConstraints = async function (constraints) {
+			await new Promise((resolve) => setTimeout(resolve, 4000));
+			return apply.call(this, constraints);
+		};
+	});
+}
+
 async function startTest(page: Page, phone = 'Test phone') {
 	await page.goto('/test');
 	await page.getByRole('textbox').fill(phone);
@@ -146,7 +161,7 @@ test('it will not move on until the step is answered', async ({ page }) => {
 	await page.getByRole('textbox').fill('Test phone');
 	await expect(page.getByText('Fill this in.')).toHaveCount(0);
 	await page.getByRole('button', { name: 'Next' }).click();
-	await expect(counter(page)).toHaveText('Step 2 of 6');
+	await expect(counter(page)).toHaveText('Step 2 of 5');
 });
 
 test('the camera starts with the panel out of the way, and the bar brings it back', async ({
@@ -157,7 +172,7 @@ test('the camera starts with the panel out of the way, and the bar brings it bac
 	await page.getByRole('button', { name: 'Next' }).click();
 
 	// Only the bar: the whole picture is in view while there is something to watch.
-	const bar = page.getByRole('button', { name: /^Step 2 of 6/ });
+	const bar = page.getByRole('button', { name: /^Step 2 of 5/ });
 	await expect(bar).toHaveAttribute('aria-expanded', 'false');
 	await expect(stepTitle(page)).toHaveCount(0);
 	expect((await panel(page).boundingBox())!.height).toBeLessThan(100);
@@ -213,7 +228,7 @@ test('the first step links to the test card, which opens in a new tab to print',
 	request
 }) => {
 	await page.goto('/test');
-	await expect(page.getByText('printed at 100 %')).toBeVisible();
+	await expect(page.getByText('The test needs this card, printed.')).toBeVisible();
 	const link = page.getByRole('link', { name: 'Test card (PDF)' });
 	await expect(link).toBeVisible();
 	await expect(link).toHaveAttribute('target', '_blank');
@@ -242,6 +257,7 @@ test('the warning to watch the picture comes before the camera starts', async ({
 test('it holds the starting step until the camera has finished changing resolution', async ({
 	page
 }) => {
+	await cameraSlowToChange(page);
 	await page.goto('/test');
 	await page.getByRole('textbox').fill('Test phone');
 	await advance(page);
@@ -334,7 +350,9 @@ test('every step opens at its own top, not where the last one was left', async (
 	await expect.poll(() => sheet.evaluate((el) => el.scrollTop)).toBe(0);
 });
 
-test('a camera that does not keep a higher resolution skips the 1920×1080 card step', async ({
+const ALL_STEPS_AFTER_THE_PHONE = ['Starting the camera', 'Card', 'Light', 'Ten minutes'];
+
+test('a camera that does not keep a higher resolution goes through the same five steps', async ({
 	page
 }) => {
 	await startTest(page);
@@ -342,28 +360,18 @@ test('a camera that does not keep a higher resolution skips the 1920×1080 card 
 	const seen = await walkToEnd(page, async (title) => {
 		if (title === 'Card') {
 			// Nothing on screen says what the camera did: that goes in the report.
-			await expect(page.getByText(/left out|did not keep/)).toHaveCount(0);
+			await expect(page.getByText(/did not keep|higher resolution/)).toHaveCount(0);
 		}
 	});
-	const titles = seen.map((s) => s.title);
-
-	expect(titles).toContain('Card');
-	expect(titles).not.toContain('Card, 1920×1080');
-	expect(titles.filter((t) => t.includes('high resolution'))).toEqual([]);
-
-	// The total stays at six. The number jumps over the skipped step, and says
-	// so from that moment on — not before, when nothing is missing yet.
+	expect(seen.map((s) => s.title)).toEqual(ALL_STEPS_AFTER_THE_PHONE);
 	expect(seen.map((s) => s.counter)).toEqual([
-		'Step 2 of 6',
-		'Step 3 of 6',
-		'Step 5 of 6 (1 skipped)',
-		'Step 6 of 6 (1 skipped)'
+		'Step 2 of 5',
+		'Step 3 of 5',
+		'Step 4 of 5',
+		'Step 5 of 5'
 	]);
 
-	// The report says what was left out and why, rather than showing gaps.
 	const sent = page.locator('pre');
-	await expect(sent).toContainText('Card, 1920×1080');
-	await expect(sent).toContainText('Skipped: the camera did not keep a higher resolution');
 	await expect(sent).not.toContainText('(not answered)');
 	await expect(sent).toContainText('raised, then set back for too few frames a second');
 
@@ -374,16 +382,17 @@ test('a camera that does not keep a higher resolution skips the 1920×1080 card 
 	await expect(sent).toContainText('Longest pause between frames');
 });
 
-test('a camera that keeps the higher resolution is measured at both', async ({ page }) => {
+test('a camera that keeps the higher resolution goes through the same five steps', async ({
+	page
+}) => {
 	await cameraThatKeepsUp(page);
 	await startTest(page);
 
 	const titles = (await walkToEnd(page)).map((s) => s.title);
-	expect(titles).toEqual(expect.arrayContaining(['Card, high resolution', 'Card, 1920×1080']));
-	await expect(counter(page)).toHaveText('Step 6 of 6');
+	expect(titles).toEqual(ALL_STEPS_AFTER_THE_PHONE);
+	await expect(counter(page)).toHaveText('Step 5 of 5');
 
 	const sent = page.locator('pre');
-	await expect(sent).not.toContainText('Skipped');
 	await expect(sent).toContainText('raised and kept');
 	// This test takes the per-frame callback away, and the report says so.
 	await expect(sent).toContainText(
@@ -489,7 +498,7 @@ test('it records it when the screen goes off during the countdown', async ({ pag
 
 test('the whole step bar shows and hides the panel', async ({ page }) => {
 	await startTest(page);
-	const bar = page.getByRole('button', { name: /^Step 2 of 6/ });
+	const bar = page.getByRole('button', { name: /^Step 2 of 5/ });
 	await expect(bar).toHaveAttribute('aria-expanded', 'true');
 
 	// Anywhere on it, not only the word at its end: here, the step counter.
@@ -537,7 +546,7 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 	expect(summary).toContain('did it flicker, jump, go black or freeze?');
 	// The optional box was left empty, and says so rather than looking skipped.
 	expect(summary).toContain('how many times? Leave blank if it did not.: (left blank)');
-	expect(summary).toContain('Finest group where you can still see three separate bars');
+	expect(summary).toContain('Is there a distance where the text is sharp?: yes');
 	// And the numbers nobody had to copy down.
 	expect(summary).toContain('Measured by the app');
 	expect(summary).toContain('Camera can do at most');
@@ -547,20 +556,22 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 	// The same run as data: fixed keys, and values a script can use as they are.
 	const data = JSON.parse(body.get('data')!);
 	expect(data.version).toBe(1);
-	expect(data.skipped).toEqual(['card-base']);
-	expect(data.answers).toMatchObject({
+	expect(data).not.toHaveProperty('skipped');
+	expect(data.answers).toEqual({
 		phone: 'A particular phone',
 		flicker: true,
 		flickerWhat: null,
-		barsBest_mm: 0.15,
-		textBest_mm: 1,
-		sharp30: true,
-		barsBase_mm: null,
+		sharp: true,
 		lightDark: 1,
+		lightRoom: 1,
 		batteryBefore_pct: 42,
-		batteryAfter_pct: 42,
 		driftAlone: 'none',
-		warmth: 'normal'
+		batteryAfter_pct: 42,
+		driftNudge: 'easy',
+		handChanged: true,
+		warmth: 'normal',
+		smooth: true,
+		notes: null
 	});
 	expect(data.camera.outcome).toBe('fellback');
 	expect(data.start.changes).toHaveLength(2);
@@ -574,7 +585,7 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 	].join('\n');
 	const [header, row] = parseCsv(convert(exported));
 	const column = (name: string) => row[header.indexOf(name)];
-	expect(column('answers.barsBest_mm')).toBe('0.15');
+	expect(column('answers.sharp')).toBe('true');
 	expect(column('answers.batteryAfter_pct')).toBe('42');
 	expect(column('start.changes.2.toWidth')).toBe('1920');
 	expect(header).not.toContain('summary');

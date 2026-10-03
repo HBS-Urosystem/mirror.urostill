@@ -65,90 +65,21 @@
 <text x="55" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">40</text>
 <text x="65" y="48" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">50</text>
 <text x="71" y="45" font-family="Arial, Helvetica, sans-serif" font-size="3.073" >50 mm</text>
-<text x="15" y="60" font-family="Arial, Helvetica, sans-serif" font-size="3.911" font-weight="700">Resolution chart</text>
-<text x="15" y="65" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Report the finest group where three separate bars are still visible, in mm.</text>
-<text x="15" y="70" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >vertical bars — horizontal detail</text>
-<rect x="31.125" y="74" width="0.15" height="12"/>
-<rect x="31.425" y="74" width="0.15" height="12"/>
-<rect x="31.725" y="74" width="0.15" height="12"/>
-<text x="31.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.15</text>
-<rect x="52.000" y="74" width="0.2" height="12"/>
-<rect x="52.400" y="74" width="0.2" height="12"/>
-<rect x="52.800" y="74" width="0.2" height="12"/>
-<text x="52.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.20</text>
-<rect x="72.875" y="74" width="0.25" height="12"/>
-<rect x="73.375" y="74" width="0.25" height="12"/>
-<rect x="73.875" y="74" width="0.25" height="12"/>
-<text x="73.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.25</text>
-<rect x="93.750" y="74" width="0.3" height="12"/>
-<rect x="94.350" y="74" width="0.3" height="12"/>
-<rect x="94.950" y="74" width="0.3" height="12"/>
-<text x="94.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.30</text>
-<rect x="114.500" y="74" width="0.4" height="12"/>
-<rect x="115.300" y="74" width="0.4" height="12"/>
-<rect x="116.100" y="74" width="0.4" height="12"/>
-<text x="115.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.40</text>
-<rect x="135.250" y="74" width="0.5" height="12"/>
-<rect x="136.250" y="74" width="0.5" height="12"/>
-<rect x="137.250" y="74" width="0.5" height="12"/>
-<text x="136.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.50</text>
-<rect x="155.625" y="74" width="0.75" height="12"/>
-<rect x="157.125" y="74" width="0.75" height="12"/>
-<rect x="158.625" y="74" width="0.75" height="12"/>
-<text x="157.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.75</text>
-<rect x="176.000" y="74" width="1" height="12"/>
-<rect x="178.000" y="74" width="1" height="12"/>
-<rect x="180.000" y="74" width="1" height="12"/>
-<text x="178.5" y="91" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">1.00</text>
-<text x="15" y="102" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >horizontal bars — vertical detail</text>
-<rect x="25.5" y="111.625" width="12" height="0.15"/>
-<rect x="25.5" y="111.925" width="12" height="0.15"/>
-<rect x="25.5" y="112.225" width="12" height="0.15"/>
-<text x="31.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.15</text>
-<rect x="46.5" y="111.500" width="12" height="0.2"/>
-<rect x="46.5" y="111.900" width="12" height="0.2"/>
-<rect x="46.5" y="112.300" width="12" height="0.2"/>
-<text x="52.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.20</text>
-<rect x="67.5" y="111.375" width="12" height="0.25"/>
-<rect x="67.5" y="111.875" width="12" height="0.25"/>
-<rect x="67.5" y="112.375" width="12" height="0.25"/>
-<text x="73.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.25</text>
-<rect x="88.5" y="111.250" width="12" height="0.3"/>
-<rect x="88.5" y="111.850" width="12" height="0.3"/>
-<rect x="88.5" y="112.450" width="12" height="0.3"/>
-<text x="94.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.30</text>
-<rect x="109.5" y="111.000" width="12" height="0.4"/>
-<rect x="109.5" y="111.800" width="12" height="0.4"/>
-<rect x="109.5" y="112.600" width="12" height="0.4"/>
-<text x="115.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.40</text>
-<rect x="130.5" y="110.750" width="12" height="0.5"/>
-<rect x="130.5" y="111.750" width="12" height="0.5"/>
-<rect x="130.5" y="112.750" width="12" height="0.5"/>
-<text x="136.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.50</text>
-<rect x="151.5" y="110.125" width="12" height="0.75"/>
-<rect x="151.5" y="111.625" width="12" height="0.75"/>
-<rect x="151.5" y="113.125" width="12" height="0.75"/>
-<text x="157.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">0.75</text>
-<rect x="172.5" y="109.500" width="12" height="1"/>
-<rect x="172.5" y="111.500" width="12" height="1"/>
-<rect x="172.5" y="113.500" width="12" height="1"/>
-<text x="178.5" y="123" font-family="Arial, Helvetica, sans-serif" font-size="2.793" text-anchor="middle">1.00</text>
-<text x="15" y="140" font-family="Arial, Helvetica, sans-serif" font-size="3.911" font-weight="700">Text</text>
-<text x="15" y="145" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Report the smallest line that can be read without guessing, by its cap height in mm.</text>
-<text x="15" y="156" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.00 mm</text>
-<text x="37" y="156" font-family="Arial, Helvetica, sans-serif" font-size="1.397" >DKNRSVZ 0369</text>
-<text x="15" y="164" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.25 mm</text>
-<text x="37" y="164" font-family="Arial, Helvetica, sans-serif" font-size="1.746" >DKNRSVZ 0369</text>
-<text x="15" y="172.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.50 mm</text>
-<text x="37" y="172.25" font-family="Arial, Helvetica, sans-serif" font-size="2.095" >DKNRSVZ 0369</text>
-<text x="15" y="180.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >2.00 mm</text>
-<text x="37" y="180.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >DKNRSVZ 0369</text>
-<text x="15" y="189.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >2.50 mm</text>
-<text x="37" y="189.75" font-family="Arial, Helvetica, sans-serif" font-size="3.492" >DKNRSVZ 0369</text>
-<text x="15" y="199.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >3.00 mm</text>
-<text x="37" y="199.25" font-family="Arial, Helvetica, sans-serif" font-size="4.190" >DKNRSVZ 0369</text>
-<text x="15" y="209.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >4.00 mm</text>
-<text x="37" y="209.25" font-family="Arial, Helvetica, sans-serif" font-size="5.587" >DKNRSVZ 0369</text>
-<text x="15" y="228.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Keep the card flat and evenly lit, and measure the distance from the card to the phone.</text>
+<text x="15" y="60" font-family="Arial, Helvetica, sans-serif" font-size="3.911" font-weight="700">Text</text>
+<text x="15" y="71" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.00 mm</text>
+<text x="37" y="71" font-family="Arial, Helvetica, sans-serif" font-size="1.397" >DKNRSVZ 0369</text>
+<text x="15" y="79" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.25 mm</text>
+<text x="37" y="79" font-family="Arial, Helvetica, sans-serif" font-size="1.746" >DKNRSVZ 0369</text>
+<text x="15" y="87.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >1.50 mm</text>
+<text x="37" y="87.25" font-family="Arial, Helvetica, sans-serif" font-size="2.095" >DKNRSVZ 0369</text>
+<text x="15" y="95.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >2.00 mm</text>
+<text x="37" y="95.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >DKNRSVZ 0369</text>
+<text x="15" y="104.75" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >2.50 mm</text>
+<text x="37" y="104.75" font-family="Arial, Helvetica, sans-serif" font-size="3.492" >DKNRSVZ 0369</text>
+<text x="15" y="114.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >3.00 mm</text>
+<text x="37" y="114.25" font-family="Arial, Helvetica, sans-serif" font-size="4.190" >DKNRSVZ 0369</text>
+<text x="15" y="124.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >4.00 mm</text>
+<text x="37" y="124.25" font-family="Arial, Helvetica, sans-serif" font-size="5.587" >DKNRSVZ 0369</text>
+<text x="15" y="143.25" font-family="Arial, Helvetica, sans-serif" font-size="2.793" >Keep the card flat and evenly lit.</text>
 </g>
 </svg>

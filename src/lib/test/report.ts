@@ -16,8 +16,6 @@ export interface Report {
 	answers: Record<string, string>;
 	/** Measurements taken by the app, in the order they were taken. */
 	readings: Reading[];
-	/** Steps this phone did not need, by id, with the reason. */
-	skipped?: Record<string, string>;
 }
 
 /**
@@ -66,11 +64,7 @@ export function formatReport(steps: Step[], report: Report): string {
 
 	for (const step of steps) {
 		if (step.questions.length === 0) continue;
-		const reason = report.skipped?.[step.id];
-		// A skipped step still gets its heading, so the gap is explained rather
-		// than looking like questions somebody did not answer.
-		const lines = reason ? [`  Skipped: ${reason}`] : stepLines(step, report.answers);
-		out.push(step.title, ...lines, '');
+		out.push(step.title, ...stepLines(step, report.answers), '');
 	}
 
 	if (report.readings.length > 0) {

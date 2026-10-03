@@ -2,7 +2,7 @@
 /**
  * Turns Netlify's CSV export of the `mirror-test` form into one table for
  * comparing phones: a row per submission, a column per value in its `data`
- * field. Nested values get dotted names — answers.barsBest_mm,
+ * field. Nested values get dotted names — answers.batteryBefore_pct,
  * camera.settledWidth, start.changes.2.pauseS — with lists numbered from 1.
  *
  *   npm run submissions -- ~/Downloads/mirror-test.csv > runs.csv

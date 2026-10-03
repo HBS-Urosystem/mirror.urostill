@@ -14,12 +14,10 @@
 	} from '$lib/test/readings';
 	import { recordFrames, startReadings, type Frame } from '$lib/test/startwatch';
 	import {
-		adaptSteps,
 		counterText,
 		isLastStep,
 		PROBE_WAIT_MS,
 		raisedFrom,
-		skipReason,
 		STEPS,
 		type Step
 	} from '$lib/test/protocol';
@@ -51,27 +49,14 @@
 	const BAR =
 		'flex flex-wrap items-center gap-x-2 gap-y-1 border-b border-base-300 px-5 py-3 whitespace-nowrap';
 
-	/**
-	 * Whether the camera kept a higher resolution, fixed at the moment the
-	 * tester leaves the starting step and never changed after. Deciding it once
-	 * means the steps ahead cannot change under the tester; until then it is
-	 * `null` and every step is shown.
-	 */
-	let raised = $state<boolean | null>(null);
-	/** Every step, retitled for this phone, skipped ones included — what the report lists. */
-	const adapted = $derived(adaptSteps(STEPS, raised));
-	/** The steps this phone actually goes through. */
-	const steps = $derived(adapted.filter((s) => skipReason(s, raised) === null));
-
-	/** Navigation is by id, so a step keeps its place when the list around it changes. */
 	let currentId = $state(STEPS[0].id);
 	const index = $derived(
 		Math.max(
 			0,
-			steps.findIndex((s) => s.id === currentId)
+			STEPS.findIndex((s) => s.id === currentId)
 		)
 	);
-	const step = $derived(steps[index]);
+	const step = $derived(STEPS[index]);
 
 	let answers = $state<Record<string, string>>({});
 	/**
@@ -128,21 +113,13 @@
 	/** The last numbers the mirror reported. Read when a step is finished. */
 	let live = { cover: 1, zoom: 1, sourcePerDevicePx: 0 };
 
-	const skipped = $derived(
-		Object.fromEntries(
-			STEPS.flatMap((s) => {
-				const reason = skipReason(s, raised);
-				return reason ? [[s.id, reason]] : [];
-			})
-		)
-	);
 	const readingsByStep = $derived(
 		Object.fromEntries(
 			Object.entries(snapshotsByStep).map(([id, snap]): [string, Reading[]] => [
 				id,
 				id === 'start'
 					? deviceReadings(snap)
-					: [detailReading(adapted.find((s) => s.id === id)?.title ?? id, snap)]
+					: [detailReading(STEPS.find((s) => s.id === id)?.title ?? id, snap)]
 			])
 		)
 	);
@@ -156,13 +133,12 @@
 			]
 		})
 	);
-	const report = $derived<Report>({ answers, readings, skipped });
-	const summary = $derived(formatReport(adapted, report));
+	const report = $derived<Report>({ answers, readings });
+	const summary = $derived(formatReport(STEPS, report));
 	const data = $derived(
 		runData({
-			steps: adapted,
+			steps: STEPS,
 			answers,
-			skipped: Object.keys(skipped),
 			snapshots: snapshotsByStep,
 			startStep: 'start',
 			startFrames,
@@ -172,9 +148,10 @@
 
 	/**
 	 * The starting step holds the tester until the resolution probe has
-	 * finished: the probe decides which steps follow, and a second resolution
-	 * change can still be on its way while the first is being described.
-	 * A camera that never reports back is let go after PROBE_WAIT_MS.
+	 * finished: a second resolution change can still be on its way while the
+	 * first is being described, and the card step has to see the resolution
+	 * the app settles on. A camera that never reports back is let go after
+	 * PROBE_WAIT_MS.
 	 */
 	let probeWaitOver = $state(false);
 	$effect(() => {
@@ -195,9 +172,7 @@
 	/** Once the countdown is over, the instructions for it are done with; the questions say what to do. */
 	const shownInstructions = $derived(waitPhase === 'over' ? [] : step.instructions);
 	/** The last step, once there is nothing left to wait for: what will be sent, and the button to send it. */
-	const finishing = $derived(
-		isLastStep(index, steps) && (waitPhase === null || waitPhase === 'over')
-	);
+	const finishing = $derived(isLastStep(index) && (waitPhase === null || waitPhase === 'over'));
 	/**
 	 * No camera picture yet, so there is nothing for the panel to keep in view:
 	 * it takes the whole screen. Kept to half, it squeezed the first step's
@@ -263,7 +238,6 @@
 		const s = step;
 		zoom = s.zoom ?? ZOOM_START;
 		level = s.light ?? HALO_DEFAULT;
-		if (cameraOn && s.resolution) void camera.useResolution(s.resolution);
 	});
 
 	/**
@@ -309,12 +283,10 @@
 		cameraOn = false;
 	}
 
-	/** Record what the app can measure, before moving off the step. */
+	/** Record what the app can measure, before moving off a step that has the camera on. */
 	function capture() {
-		const measured =
-			step.id === 'start' || (step.zoom !== undefined && step.resolution !== undefined);
 		// Replaces whatever this step recorded the last time through it.
-		if (measured) snapshotsByStep = { ...snapshotsByStep, [step.id]: snapshot() };
+		if (step.needsCamera) snapshotsByStep = { ...snapshotsByStep, [step.id]: snapshot() };
 	}
 
 	/**
@@ -352,10 +324,8 @@
 		if (showMissing()) return;
 
 		capture();
-		if (step.id === 'start') raised = raisedFrom(camera.upgradeState);
 
-		// Read after `raised` is set, so a step this phone does not need is passed over.
-		const following = steps[Math.min(index + 1, steps.length - 1)];
+		const following = STEPS[Math.min(index + 1, STEPS.length - 1)];
 		if (following.needsCamera && !cameraOn) {
 			// Started from this tap, while the gesture still counts.
 			if (!(await startCamera())) return;
@@ -368,7 +338,7 @@
 
 	function back() {
 		missing = [];
-		const previous = steps[Math.max(index - 1, 0)];
+		const previous = STEPS[Math.max(index - 1, 0)];
 		currentId = previous.id;
 		wait = waitOnArrival(previous);
 		panelOpen = true;
@@ -488,7 +458,7 @@
 		-->
 		{#if waitPhase === 'running'}
 			<header class={BAR}>
-				<span class="text-note font-semibold">{counterText(step.id, raised)}</span>
+				<span class="text-note font-semibold">{counterText(step.id)}</span>
 				<!-- Equal-width digits keep the countdown still without a monospace font. -->
 				<span class="text-note tabular-nums">{clock(remaining)} left</span>
 				<button class="btn ml-auto btn-xs" type="button" onclick={stopWait}>Stop early</button>
@@ -504,12 +474,12 @@
 				aria-expanded={panelOpen}
 				onclick={() => (panelOpen = !panelOpen)}
 			>
-				<span class="text-note font-semibold">{counterText(step.id, raised)}</span>
+				<span class="text-note font-semibold">{counterText(step.id)}</span>
 				<span class="ml-auto text-xs font-semibold">{panelOpen ? 'Hide' : 'Show'}</span>
 			</button>
 		{:else}
 			<header class={BAR}>
-				<span class="text-note font-semibold">{counterText(step.id, raised)}</span>
+				<span class="text-note font-semibold">{counterText(step.id)}</span>
 			</header>
 		{/if}
 

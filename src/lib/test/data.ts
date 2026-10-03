@@ -44,11 +44,9 @@ export interface Countdown {
 }
 
 export interface RunInput {
-	/** Every step, retitled for this phone, skipped ones included. */
+	/** Every step of the test. */
 	steps: Step[];
 	answers: Record<string, string>;
-	/** The ids of the steps this phone did not need. */
-	skipped: string[];
 	/** What the app read off the camera, by the step it was read on. */
 	snapshots: Record<string, Snapshot>;
 	/** The step whose snapshot holds the camera and the device. */
@@ -85,7 +83,6 @@ function startData(frames: Frame[] | null | undefined) {
 export function runData({
 	steps,
 	answers,
-	skipped,
 	snapshots,
 	startStep,
 	startFrames,
@@ -96,7 +93,6 @@ export function runData({
 
 	return {
 		version: PROTOCOL_VERSION,
-		skipped,
 		answers: Object.fromEntries(
 			questions.map((q) => [answerKey(q), answerValue(q, answers[q.name])])
 		),

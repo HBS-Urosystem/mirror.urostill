@@ -34,17 +34,18 @@ the following, and nothing more:
 ## Why it needs testing on real phones
 
 All of the above works on the computer it was built on, and on the one iPhone
-it has been tried on. What that cannot show:
+it has been tried on. The following has to be checked on as many phones as
+possible, of different makes, models and ages:
 
-- **How good the picture is.** Front cameras differ a great deal. How much
-  detail the higher resolution adds over 1920×1080, and how far the picture can
-  be magnified before it stops being useful, can only be seen on each phone.
+- **Whether the picture can be sharp.** Front cameras differ a great deal.
+  Whether there is a distance at which the picture is sharp, magnified five
+  times, can only be seen on each phone.
 - **Whether the screen gives enough light.** That depends on the screen and the
   room.
 - **What it costs to run.** Battery use and heat over ten minutes, and whether
   the phone really stays awake.
 - **Whether the picture stays still** when nothing touches the phone, and how
-  far a nudge throws it off.
+  hard it is to put back after a nudge.
 
 What the results decide:
 
@@ -55,8 +56,7 @@ What the results decide:
 - whether battery use and heat allow everyday use.
 
 All of these differ from phone to phone, and whatever is decided has to work on
-the cheapest phone in the set, not the best one. **Please run the test on as
-many phones as you can.**
+the cheapest phone in the set, not the best one.
 
 ## How to run the test
 
@@ -65,13 +65,8 @@ fifteen minutes, ten of them waiting.
 
 You need:
 
-- the printed test card. The test's first step has it as a PDF: print it at
-  100 %, with "fit to page" off, and check that its ruler measures 50 mm. A
-  photocopy or a rescaled print will not do: the sizes printed on it are what
-  the answers mean;
+- the printed test card. The test's first step has it as a PDF;
 - something to stand the card on, and something to stand the phone on;
-- a tape measure. Lay it on the table from the phone towards the card and
-  leave it there: the card moves between 30, 35 and 45 cm;
 - a room you can darken.
 
 **Do not reload the page.** Nothing is stored, so a reload loses every answer.
@@ -95,34 +90,26 @@ everything it will send, and sends it in one go.
    **What for:** deciding whether raising the resolution is unnoticeable enough to
    keep. If people notice it, it has to happen differently, or not at all.
 
-3. **Card, high resolution.** At 35 cm, magnified five times: the finest group
-   of bars and the smallest line of text you can make out. Then whether the text
-   stays as sharp with the card at 30 cm and at 45 cm.
+3. **Card.** Magnified five times, at the best resolution the app uses on that
+   phone: moving the card nearer and further, is there a distance where the
+   text is sharp? The card then stays where the text looks sharpest.
 
-   **What for:** how much detail the camera gives, and over what distance it
-   stays sharp; and the maximum magnification, now five times, which comes down
-   if the text cannot be read at it.
+   **What for:** whether the phone gives a sharp picture at the maximum
+   magnification, now five times. If no distance does, the maximum comes down.
 
-4. **Card, 1920×1080.** The same card again, at the lower resolution. If the
-   camera did not keep the higher resolution in step 2, there is nothing to
-   compare, so this step is left out: the step counter goes from step 3 to
-   step 5 and adds "(1 skipped)".
-
-   **What for:** deciding whether the higher resolution is worth keeping. If the
-   card reads the same at both, the higher one does nothing on that phone except
-   use battery and warm it up, and it gets switched off.
-
-5. **Light.** With the light frame at its brightest: is there enough light on
-   the card in a dark room, and then with the room light on.
+4. **Light.** With the light frame at its brightest, and the card where the
+   last step left it: is there enough light on the card in a dark room, and then
+   with the room light on.
 
    **What for:** deciding whether the screen is enough light on its own. If it is not,
    even at its brightest, no change to the app can fix that, and a separate
    light is the answer.
 
-6. **Ten minutes.** The phone stays on its stand, facing the card. You enter the
+5. **Ten minutes.** The phone stays on its stand, facing the card. You enter the
    battery percentage, and the countdown starts. Afterwards: whether the picture
-   has moved, the battery percentage again, what a nudge to the stand does,
-   whether a hand in the picture changes anything, how warm the phone is,
+   has moved, the battery percentage again, how hard it is to drag the picture
+   back to the middle after a nudge to the stand, whether a hand in the picture
+   changes anything, how warm the phone is,
    whether moving and zooming stays smooth, and anything else you noticed. The
    app records whether the screen stayed on.
 

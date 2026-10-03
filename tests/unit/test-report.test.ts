@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	adaptSteps,
-	BAR_WIDTHS,
-	counterText,
-	isLastStep,
-	raisedFrom,
-	skipReason,
-	STEPS,
-	TEXT_HEIGHTS
-} from '../../src/lib/test/protocol';
+import { counterText, isLastStep, raisedFrom, STEPS } from '../../src/lib/test/protocol';
 import {
 	formatReport,
 	readingsInOrder,
@@ -25,7 +16,7 @@ import {
 	type Snapshot
 } from '../../src/lib/test/readings';
 
-const step = STEPS.find((s) => s.id === 'card-best')!;
+const step = STEPS.find((s) => s.id === 'light')!;
 
 const snapshot = (over: Partial<Snapshot> = {}): Snapshot => ({
 	cameraMaxWidth: 4032,
@@ -60,21 +51,22 @@ describe('protocol', () => {
 		expect(new Set(names).size).toBe(names.length);
 	});
 
-	it('measures the card at both resolutions, otherwise there is nothing to compare', () => {
-		const measured = STEPS.filter((s) => s.resolution && s.zoom);
-		expect(measured.some((s) => s.resolution === 'settled')).toBe(true);
-		expect(measured.some((s) => s.resolution === 'base')).toBe(true);
-	});
-
 	it('only ever asks for a magnification the mirror can reach', () => {
 		for (const s of STEPS) if (s.zoom !== undefined) expect(s.zoom).toBeLessThanOrEqual(5);
 	});
 
-	it('offers every width and height that is printed on the card', () => {
-		const bars = step.questions[0];
-		const text = step.questions[1];
-		expect(bars.kind === 'choice' && bars.options).toHaveLength(BAR_WIDTHS.length + 1);
-		expect(text.kind === 'choice' && text.options).toHaveLength(TEXT_HEIGHTS.length + 1);
+	it('asks one thing about the card, magnified to the most: whether some distance gives sharp text', () => {
+		const card = STEPS.find((s) => s.id === 'card')!;
+		expect(card.zoom).toBe(5);
+		expect(card.questions.map((q) => q.name)).toEqual(['sharp']);
+	});
+
+	it('asks how hard it was to put the picture back after a nudge, with nothing else to pick', () => {
+		const nudge = STEPS.flatMap((s) => s.questions).find((q) => q.name === 'driftNudge')!;
+		expect(nudge.kind === 'choice' && nudge.options.map((o) => o.label)).toEqual([
+			'easy',
+			'annoying'
+		]);
 	});
 
 	it('knows which step is the last one', () => {
@@ -83,52 +75,14 @@ describe('protocol', () => {
 	});
 });
 
-describe('a camera that did not keep a higher resolution', () => {
-	const byId = (steps: typeof STEPS, id: string) => steps.find((s) => s.id === id)!;
-
-	it('reads the probe outcome as kept, not kept, or not known yet', () => {
+describe('the resolution probe', () => {
+	it('reads its outcome as kept, not kept, or not known yet', () => {
 		expect(raisedFrom('upgraded')).toBe(true);
 		expect(raisedFrom('fellback')).toBe(false);
 		expect(raisedFrom('unavailable')).toBe(false);
 		expect(raisedFrom('skipped')).toBe(false);
 		expect(raisedFrom('probing')).toBeNull();
 		expect(raisedFrom('idle')).toBeNull();
-	});
-
-	it('leaves out the two 1920×1080 steps, and nothing else', () => {
-		const left = STEPS.filter((s) => skipReason(s, false) !== null).map((s) => s.id);
-		expect(left).toEqual(['card-base']);
-	});
-
-	it('leaves everything in while the outcome is unknown, or when it was kept', () => {
-		expect(STEPS.filter((s) => skipReason(s, null) !== null)).toEqual([]);
-		expect(STEPS.filter((s) => skipReason(s, true) !== null)).toEqual([]);
-	});
-
-	it('stops calling the first round "high resolution", and tells the tester nothing else', () => {
-		const adapted = adaptSteps(STEPS, false);
-		expect(byId(adapted, 'card-best').title).toBe('Card');
-		// What the camera did is a result for the report, not news for the tester.
-		expect(byId(adapted, 'card-best').instructions).toEqual(byId(STEPS, 'card-best').instructions);
-	});
-
-	it('changes nothing when the camera kept the higher resolution', () => {
-		expect(adaptSteps(STEPS, true)).toBe(STEPS);
-		expect(adaptSteps(STEPS, null)).toBe(STEPS);
-	});
-
-	it('explains a skipped step in the report instead of listing it as unanswered', () => {
-		const skipped = { 'card-base': skipReason(byId(STEPS, 'card-base'), false)! };
-		const text = formatReport([byId(STEPS, 'card-base')], { answers: {}, readings: [], skipped });
-		expect(text).toContain('Card, 1920×1080');
-		expect(text).toContain('Skipped: the camera did not keep a higher resolution');
-		expect(text).not.toContain('(not answered)');
-	});
-
-	it('knows the last step of a shortened list', () => {
-		const shown = STEPS.filter((s) => skipReason(s, false) === null);
-		expect(isLastStep(shown.length - 1, shown)).toBe(true);
-		expect(isLastStep(STEPS.length - 1, shown)).toBe(false);
 	});
 });
 
@@ -166,23 +120,10 @@ describe('the battery percentage around the ten minutes', () => {
 });
 
 describe('the step counter', () => {
-	it('counts against all six steps, whatever this phone skips', () => {
-		expect(counterText('phone', false)).toBe('Step 1 of 6');
-		expect(counterText('ten-minutes', true)).toBe('Step 6 of 6');
-	});
-
-	it('mentions nothing before the skipped step has been reached', () => {
-		expect(counterText('card-best', false)).toBe('Step 3 of 6');
-	});
-
-	it('says how many were skipped once they are behind the tester', () => {
-		expect(counterText('light', false)).toBe('Step 5 of 6 (1 skipped)');
-		expect(counterText('ten-minutes', false)).toBe('Step 6 of 6 (1 skipped)');
-	});
-
-	it('mentions nothing when the camera kept the higher resolution, or before that is known', () => {
-		expect(counterText('light', true)).toBe('Step 5 of 6');
-		expect(counterText('light', null)).toBe('Step 5 of 6');
+	it('counts against all five steps', () => {
+		expect(counterText('phone')).toBe('Step 1 of 5');
+		expect(counterText('card')).toBe('Step 3 of 5');
+		expect(counterText('ten-minutes')).toBe('Step 5 of 5');
 	});
 });
 
@@ -230,14 +171,14 @@ describe('the warning that has to come before the camera', () => {
 });
 
 describe('unanswered', () => {
-	const all = { barsBest: '0.30 mm', textBest: '1.50 mm', sharp30: 'yes', sharp45: 'no' };
+	const all = { lightDark: '1 — not enough', lightRoom: '3 — plenty' };
 
 	it('names every question still blank', () => {
-		expect(unanswered(step, {})).toEqual(['barsBest', 'textBest', 'sharp30', 'sharp45']);
+		expect(unanswered(step, {})).toEqual(['lightDark', 'lightRoom']);
 	});
 
 	it('does not accept a space as an answer', () => {
-		expect(unanswered(step, { ...all, sharp30: '  ' })).toEqual(['sharp30']);
+		expect(unanswered(step, { ...all, lightRoom: '  ' })).toEqual(['lightRoom']);
 	});
 
 	it('is empty once all of them are answered', () => {
@@ -247,21 +188,19 @@ describe('unanswered', () => {
 
 describe('formatReport', () => {
 	const report: Report = {
-		answers: { phone: 'iPhone 14 Pro', sharp30: 'yes', barsBest: '0.25 mm' },
+		answers: { phone: 'iPhone 14 Pro', lightDark: '2 — usable' },
 		readings: [{ label: 'Frames per second it counted', value: '29.8' }]
 	};
 
 	it('keeps an unanswered question in, rather than hiding the gap', () => {
 		const text = formatReport(STEPS, report);
-		expect(text).toContain(
-			'Now take it to 45 cm. Is the text as sharp as at 35 cm?: (not answered)'
-		);
+		expect(text).toContain('Is there a distance where the text is sharp?: (not answered)');
 	});
 
 	it('carries the answers and the measurements', () => {
 		const text = formatReport(STEPS, report);
 		expect(text).toContain('iPhone 14 Pro');
-		expect(text).toContain('0.25 mm');
+		expect(text).toContain('2 — usable');
 		expect(text).toContain('29.8');
 	});
 
@@ -271,8 +210,8 @@ describe('formatReport', () => {
 	});
 
 	it('labels the lines with the question, not the field name', () => {
-		expect(stepLines(step, { sharp30: 'yes' })).toContain(
-			'  Bring the card to 30 cm. Is the text as sharp as at 35 cm?: yes'
+		expect(stepLines(step, { lightDark: '2 — usable' })).toContain(
+			'  Darken the room. Is there enough light on the card?: 2 — usable'
 		);
 	});
 });
@@ -281,14 +220,14 @@ describe('readingsInOrder', () => {
 	const reading = (label: string) => ({ label, value: '1' });
 
 	it('lists the readings in the order of the steps, not the order they were taken', () => {
-		const byStep = { 'card-best': [reading('card')], start: [reading('camera')] };
+		const byStep = { 'card': [reading('card')], start: [reading('camera')] };
 		expect(readingsInOrder(STEPS, byStep).map((r) => r.label)).toEqual(['camera', 'card']);
 	});
 
 	it('holds one set per step, so a step measured again is listed once', () => {
 		let byStep: Record<string, ReturnType<typeof reading>[]> = {};
-		byStep = { ...byStep, 'card-best': [reading('first time')] };
-		byStep = { ...byStep, 'card-best': [reading('second time')] };
+		byStep = { ...byStep, 'card': [reading('first time')] };
+		byStep = { ...byStep, 'card': [reading('second time')] };
 		expect(readingsInOrder(STEPS, byStep).map((r) => r.label)).toEqual(['second time']);
 	});
 
@@ -341,9 +280,12 @@ describe('submissionBody', () => {
 	});
 
 	it('sends the data for analysis next to the readable summary', () => {
-		const data = JSON.stringify({ version: 1, answers: { barsBest_mm: 0.3 } });
+		const data = JSON.stringify({ version: 1, answers: { sharp: true } });
 		const body = new URLSearchParams(submissionBody('f', 'p', 's', data));
-		expect(JSON.parse(body.get('data')!)).toEqual({ version: 1, answers: { barsBest_mm: 0.3 } });
+		expect(JSON.parse(body.get('data')!)).toEqual({
+			version: 1,
+			answers: { sharp: true }
+		});
 	});
 
 	it('says so rather than sending an empty phone', () => {

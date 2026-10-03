@@ -30,7 +30,6 @@ const snapshot = (over: Partial<Snapshot> = {}): Snapshot => ({
 const input = (over: Partial<RunInput> = {}): RunInput => ({
 	steps: STEPS,
 	answers: {},
-	skipped: [],
 	snapshots: {},
 	startStep: 'start',
 	startFrames: undefined,
@@ -40,10 +39,9 @@ const input = (over: Partial<RunInput> = {}): RunInput => ({
 
 describe('the keys answers are sent under', () => {
 	it('put the unit in the key, so a column says what it holds', () => {
-		expect(answerKey(question('barsBest'))).toBe('barsBest_mm');
-		expect(answerKey(question('textBase'))).toBe('textBase_mm');
 		expect(answerKey(question('batteryBefore'))).toBe('batteryBefore_pct');
-		expect(answerKey(question('flicker'))).toBe('flicker');
+		expect(answerKey(question('batteryAfter'))).toBe('batteryAfter_pct');
+		expect(answerKey(question('sharp'))).toBe('sharp');
 	});
 
 	it('are all different, across the whole test', () => {
@@ -54,20 +52,18 @@ describe('the keys answers are sent under', () => {
 
 describe('the values answers are sent as', () => {
 	it('come from the option picked, not its wording', () => {
-		expect(answerValue(question('barsBest'), '0.30 mm')).toBe(0.3);
-		expect(answerValue(question('textBest'), '1.25 mm')).toBe(1.25);
 		expect(answerValue(question('lightDark'), '2 — usable')).toBe(2);
-		expect(answerValue(question('sharp30'), 'yes')).toBe(true);
-		expect(answerValue(question('sharp45'), 'no')).toBe(false);
+		expect(answerValue(question('sharp'), 'yes')).toBe(true);
+		expect(answerValue(question('sharp'), 'no')).toBe(false);
 		expect(answerValue(question('driftAlone'), 'moved a little')).toBe('little');
-		expect(answerValue(question('driftNudge'), 'not needed')).toBe('not-needed');
+		expect(answerValue(question('driftNudge'), 'annoying')).toBe('annoying');
 		expect(answerValue(question('warmth'), 'warm')).toBe('warm');
 	});
 
-	it('tell "none of the groups" apart from no answer at all', () => {
-		expect(answerValue(question('barsBest'), 'none of them')).toBe('none');
-		expect(answerValue(question('barsBest'), undefined)).toBeNull();
-		expect(answerValue(question('barsBest'), '  ')).toBeNull();
+	it('tell an answer of "none" apart from no answer at all', () => {
+		expect(answerValue(question('driftAlone'), 'not moved')).toBe('none');
+		expect(answerValue(question('driftAlone'), undefined)).toBeNull();
+		expect(answerValue(question('driftAlone'), '  ')).toBeNull();
 	});
 
 	it('read a typed number as a number, forgiving a % sign or a decimal comma', () => {
@@ -101,15 +97,11 @@ describe('runData', () => {
 	});
 
 	it('files every question, the ones before the countdown included, answered or not', () => {
-		const data = runData(input({ answers: { barsBest: '0.30 mm', batteryBefore: '78' } }));
+		const data = runData(input({ answers: { sharp: 'yes', batteryBefore: '78' } }));
 		expect(Object.keys(data.answers)).toHaveLength(allQuestions.length);
-		expect(data.answers.barsBest_mm).toBe(0.3);
+		expect(data.answers.sharp).toBe(true);
 		expect(data.answers.batteryBefore_pct).toBe(78);
-		expect(data.answers.textBest_mm).toBeNull();
-	});
-
-	it('lists the steps this phone did not need', () => {
-		expect(runData(input({ skipped: ['card-base'] })).skipped).toEqual(['card-base']);
+		expect(data.answers.lightDark).toBeNull();
 	});
 
 	it('takes the camera and the device from the starting step, as numbers', () => {
@@ -134,8 +126,8 @@ describe('runData', () => {
 	});
 
 	it('keeps the camera detail of every step it was read on', () => {
-		const data = runData(input({ snapshots: { 'card-best': snapshot() } }));
-		expect(data.detail['card-best']).toEqual({
+		const data = runData(input({ snapshots: { card: snapshot() } }));
+		expect(data.detail.card).toEqual({
 			sourcePerDevicePx: 0.654,
 			zoom: 5,
 			width: 1920,
