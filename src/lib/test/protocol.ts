@@ -5,13 +5,35 @@
  * Plain data, no DOM. The page walks this list; nothing here knows how it is
  * drawn.
  */
+import type { UpgradeState } from '../camera.svelte';
 import type { HaloLevel } from '../config';
+
+/**
+ * Raise this whenever a question, an option or a measurement changes meaning,
+ * so that runs of different versions of the test are never compared as if
+ * they were the same thing. It is sent with every run.
+ */
+export const PROTOCOL_VERSION = 1;
+
+/** What an answer is filed as for analysis, as opposed to the words on the button. */
+export type Value = string | number | boolean | null;
+
+export interface Option {
+	/** What the tester sees. */
+	label: string;
+	/** What is sent for analysis: stays the same when the wording changes. */
+	value: Value;
+}
 
 export interface Choice {
 	kind: 'choice';
 	name: string;
 	label: string;
-	options: string[];
+	options: Option[];
+	/** The unit of a numeric value; it becomes part of the key the answer is sent under. */
+	unit?: string;
+	/** A blank answer is accepted and sent as such. */
+	optional?: true;
 }
 
 export interface FreeText {
@@ -19,9 +41,28 @@ export interface FreeText {
 	name: string;
 	label: string;
 	placeholder?: string;
+	/** A number is expected: phones show the number keypad, and it is sent as a number. */
+	numeric?: true;
+	/** The unit of a numeric value; it becomes part of the key the answer is sent under. */
+	unit?: string;
+	/** A blank answer is accepted and sent as such. */
+	optional?: true;
 }
 
 export type Question = Choice | FreeText;
+
+/**
+ * How a step changes on a phone whose camera did not keep a higher resolution
+ * than it started with. Left as it is, the "high resolution" steps would run at
+ * the starting resolution under a title that says otherwise, and the 1920×1080
+ * round would measure the same thing a second time.
+ *
+ * The tester is not told why. What the camera did is a result, and results
+ * belong in the report, not on the screen of the person producing them. The
+ * step counter only shows that steps were passed over, so the jump in its
+ * number does not look like a mistake.
+ */
+export type IfNotRaised = { kind: 'skip'; reason: string } | { kind: 'retitle'; title: string };
 
 export interface Step {
 	id: string;
@@ -37,8 +78,33 @@ export interface Step {
 	resolution?: 'settled' | 'base';
 	/** The camera is needed from this step onwards. */
 	needsCamera?: boolean;
-	/** A countdown the tester waits out, in seconds. */
+	/**
+	 * A countdown the tester waits out, in seconds. The step's questions are about
+	 * the wait, so they are shown only once it is over.
+	 */
 	waitSeconds?: number;
+	/**
+	 * Asked before the countdown, which starts the moment they are answered —
+	 * for a reading that has to be taken right at the start of the wait.
+	 */
+	beforeWait?: Question[];
+	/**
+	 * Said beside the button that leaves this step, for anything the tester has
+	 * to do while the next step is arriving rather than after it has.
+	 */
+	before?: string;
+	ifNotRaised?: IfNotRaised;
+	/**
+	 * The panel is dark on this step. A light panel is a lamp in its own right,
+	 * and on the light step it would add to the light being judged.
+	 */
+	darkSheet?: true;
+	/**
+	 * Arriving at this step, the panel is closed to its bar, so the whole picture
+	 * is in view while there is something on it to watch. Coming back to the
+	 * step to change an answer, it opens as usual.
+	 */
+	startClosed?: true;
 }
 
 /** The bar widths printed on the card, finest first. */
@@ -46,35 +112,50 @@ export const BAR_WIDTHS = ['0.15', '0.20', '0.25', '0.30', '0.40', '0.50', '0.75
 /** The cap heights printed on the card, smallest first. */
 export const TEXT_HEIGHTS = ['1.00', '1.25', '1.50', '2.00', '2.50', '3.00', '4.00'];
 
+/** 'none' rather than null: not one group resolved is an answer, unlike a blank. */
+const NONE: Option = { label: 'none of them', value: 'none' };
+
 const barQuestion = (name: string): Choice => ({
 	kind: 'choice',
 	name,
+	unit: 'mm',
 	label: 'Finest group where you can still see three separate bars',
-	options: [...BAR_WIDTHS.map((w) => `${w} mm`), 'none of them']
+	options: [...BAR_WIDTHS.map((w) => ({ label: `${w} mm`, value: Number(w) })), NONE]
 });
 
 const textQuestion = (name: string): Choice => ({
 	kind: 'choice',
 	name,
+	unit: 'mm',
 	label: 'Smallest line you can read without guessing',
-	options: [...TEXT_HEIGHTS.map((h) => `${h} mm`), 'none of them']
+	options: [...TEXT_HEIGHTS.map((h) => ({ label: `${h} mm`, value: Number(h) })), NONE]
 });
 
 const yesNo = (name: string, label: string): Choice => ({
 	kind: 'choice',
 	name,
 	label,
-	options: ['yes', 'no']
+	options: [
+		{ label: 'yes', value: true },
+		{ label: 'no', value: false }
+	]
 });
+
+const LIGHT_SCALE: Option[] = [
+	{ label: '1 — not enough', value: 1 },
+	{ label: '2 — usable', value: 2 },
+	{ label: '3 — plenty', value: 3 }
+];
+
+/** Options whose words are their own value. */
+const plain = (...words: string[]): Option[] => words.map((w) => ({ label: w, value: w }));
 
 export const STEPS: Step[] = [
 	{
 		id: 'phone',
 		title: 'Which phone is this?',
 		instructions: [
-			'This takes about twenty minutes, most of it waiting.',
-			'You will need the printed test card, something to stand it up, and a room you can darken.',
-			'Keep this page open until the end. Nothing is saved, so reloading loses the answers.'
+			'Keep this page open to the end. Nothing is saved, so a reload loses the answers.'
 		],
 		questions: [
 			{
@@ -83,83 +164,65 @@ export const STEPS: Step[] = [
 				label: 'Phone, and which version of iOS or Android',
 				placeholder: 'iPhone 14 Pro, iOS 26'
 			}
-		]
+		],
+		/** Said next to the button that starts the camera, before there is anything to watch. */
+		before:
+			'Pressing Next starts the camera and moves this panel out of the way. Watch the picture for the first few seconds: it may flicker, jump, go black or freeze. Then tap the bar at the bottom to answer.'
 	},
 	{
 		id: 'start',
 		title: 'Starting the camera',
 		needsCamera: true,
+		startClosed: true,
 		zoom: 1,
 		resolution: 'settled',
-		instructions: [
-			'The picture is running, and the app has just asked the camera for its best quality.',
-			'That takes a second or two and is normally invisible.'
-		],
+		instructions: [],
 		questions: [
-			yesNo('flicker', 'Did the picture flicker, jump or freeze in the first few seconds?')
+			yesNo(
+				'flicker',
+				'In the first few seconds after the picture appeared, did it flicker, jump, go black or freeze?'
+			),
+			{
+				kind: 'text',
+				name: 'flickerWhat',
+				label: 'If it did, what happened, and how many times? Leave blank if it did not.',
+				placeholder: 'went black once / flickered twice / froze for a moment',
+				optional: true
+			}
 		]
 	},
 	{
-		id: 'focus',
-		title: 'Can it focus?',
+		// One setup, so one step: the card at 35 cm for the bars and the text, then
+		// moved nearer and further for the focus, each answered as it is seen.
+		id: 'card-best',
+		title: 'Card, high resolution',
 		needsCamera: true,
-		zoom: 1,
+		zoom: 5,
+		resolution: 'settled',
+		ifNotRaised: { kind: 'retitle', title: 'Card' },
 		instructions: [
-			'Stand the card up, lit evenly, with no glare across it.',
-			'Hold the phone at each distance in turn and look at the largest line of text.',
-			'Many front cameras cannot focus at all, so expect some distances to be soft.'
+			'Stand the card and the phone 35 cm apart, the card evenly lit. Drag the picture to see the bars, then the text.'
 		],
 		questions: [
-			yesNo('sharp30', 'Sharp at 30 cm?'),
-			yesNo('sharp35', 'Sharp at 35 cm?'),
-			yesNo('sharp45', 'Sharp at 45 cm?')
+			barQuestion('barsBest'),
+			textQuestion('textBest'),
+			yesNo('sharp30', 'Bring the card to 30 cm. Is the text as sharp as at 35 cm?'),
+			yesNo('sharp45', 'Now take it to 45 cm. Is the text as sharp as at 35 cm?')
 		]
 	},
 	{
-		id: 'bars-best',
-		title: 'Bars, best quality',
-		needsCamera: true,
-		zoom: 5,
-		resolution: 'settled',
-		instructions: [
-			'Card at 35 cm. The picture is magnified five times.',
-			'Look along the row of bar groups, from the narrowest to the widest.',
-			'Find the first group where you can still count three separate bars.'
-		],
-		questions: [barQuestion('barsBest')]
-	},
-	{
-		id: 'text-best',
-		title: 'Text, best quality',
-		needsCamera: true,
-		zoom: 3,
-		resolution: 'settled',
-		instructions: [
-			'Card at 35 cm. The picture is magnified three times.',
-			'Read down the lines of letters until you have to start guessing.'
-		],
-		questions: [textQuestion('textBest')]
-	},
-	{
-		id: 'bars-base',
-		title: 'Bars, lower quality',
+		id: 'card-base',
+		title: 'Card, 1920×1080',
 		needsCamera: true,
 		zoom: 5,
 		resolution: 'base',
-		instructions: [
-			'The camera has been put back to the lower setting. Everything else is the same.',
-			'Card at 35 cm, magnified five times. Find the finest group again.'
-		],
-		questions: [barQuestion('barsBase')]
-	},
-	{
-		id: 'text-base',
-		title: 'Text, lower quality',
-		needsCamera: true,
-		zoom: 3,
-		resolution: 'base',
-		instructions: ['Card at 35 cm, magnified three times. Read down the lines again.'],
-		questions: [textQuestion('textBase')]
+		ifNotRaised: {
+			kind: 'skip',
+			reason:
+				'the camera did not keep a higher resolution, so the first card step was already at this resolution.'
+		},
+		instructions: ['Card back at 35 cm.'],
+		questions: [barQuestion('barsBase'), textQuestion('textBase')]
 	},
 	{
 		id: 'light',
@@ -168,99 +231,144 @@ export const STEPS: Step[] = [
 		zoom: 1,
 		light: 'bright',
 		resolution: 'settled',
-		instructions: [
-			'The white frame around the picture is now at its widest, which is the app at its brightest.',
-			'Darken the room, hold the card at 35 cm, and look at how well it is lit.',
-			'Then turn the room light on and look again.'
-		],
+		darkSheet: true,
+		instructions: ['Card at 35 cm.'],
 		questions: [
 			{
 				kind: 'choice',
 				name: 'lightDark',
-				label: 'With the room light off',
-				options: ['1 — not enough', '2 — usable', '3 — plenty']
+				label: 'Darken the room. Is there enough light on the card?',
+				options: LIGHT_SCALE
 			},
 			{
 				kind: 'choice',
 				name: 'lightRoom',
-				label: 'With the room light on',
-				options: ['1 — not enough', '2 — usable', '3 — plenty']
+				label: 'Now turn the room light on. How is the light on the card?',
+				options: LIGHT_SCALE
 			}
 		]
 	},
 	{
+		// The phone stays on its stand facing the card for the whole step, so the
+		// ten minutes also show whether the picture drifts when nothing moves —
+		// and the checks that need the phone touched come after, in that order.
 		id: 'ten-minutes',
 		title: 'Ten minutes',
 		needsCamera: true,
-		zoom: 1,
+		zoom: 3,
 		resolution: 'settled',
 		waitSeconds: 600,
 		instructions: [
-			'Note the battery percentage, then put the phone down and leave it alone.',
-			'Do not lock it or switch apps — the point is whether it keeps itself awake.',
-			'Come back when the countdown reaches zero.'
+			'Leave the phone on its stand, facing the card, and note which part of the card is just above this panel. Do not touch the phone while the countdown runs.'
 		],
-		questions: [
-			yesNo('stayedOn', 'Did the screen stay on the whole time?'),
+		beforeWait: [
 			{
 				kind: 'text',
-				name: 'battery',
-				label: 'Battery percentage before and after',
-				placeholder: '78 before, 71 after'
-			},
-			{
-				kind: 'choice',
-				name: 'warmth',
-				label: 'How does the phone feel?',
-				options: ['normal', 'warm', 'hot']
-			},
-			yesNo('smooth', 'Move and zoom the picture with your fingers — does it stay smooth?')
-		]
-	},
-	{
-		id: 'still',
-		title: 'Does the picture stay still?',
-		needsCamera: true,
-		zoom: 3,
-		resolution: 'settled',
-		instructions: [
-			'Stand the phone up at 35 cm, pointed at the card.',
-			'Leave it completely alone for a minute and watch.',
-			'Then nudge whatever it is standing on by a centimetre.',
-			'Then hold a hand in the middle of the picture.'
+				name: 'batteryBefore',
+				label: 'Battery percentage now, before the countdown',
+				placeholder: '78',
+				numeric: true,
+				unit: 'pct'
+			}
 		],
 		questions: [
+			// Before anything is touched, which would move the picture.
 			{
 				kind: 'choice',
 				name: 'driftAlone',
-				label: 'Left alone for a minute, the picture',
-				options: ['stayed put', 'moved a little', 'wandered noticeably']
+				label: 'Compared with the start, the picture has',
+				options: [
+					{ label: 'not moved', value: 'none' },
+					{ label: 'moved a little', value: 'little' },
+					{ label: 'moved a lot', value: 'lot' }
+				]
+			},
+			// Next, because the percentage goes on falling while the rest are answered.
+			{
+				kind: 'text',
+				name: 'batteryAfter',
+				label: 'Battery percentage now, after the countdown',
+				placeholder: '71',
+				numeric: true,
+				unit: 'pct'
 			},
 			{
 				kind: 'choice',
 				name: 'driftNudge',
-				label: 'After the nudge, getting back to what you were looking at was',
-				options: ['not needed', 'easy', 'annoying']
+				label: 'Nudge the stand by about a centimetre. Getting back to what you were looking at is',
+				options: [
+					{ label: 'not needed', value: 'not-needed' },
+					{ label: 'easy', value: 'easy' },
+					{ label: 'annoying', value: 'annoying' }
+				]
 			},
-			yesNo('handChanged', 'Did holding a hand in the picture change anything?')
-		]
-	},
-	{
-		id: 'done',
-		title: 'Anything else?',
-		instructions: [
-			'That is everything. The measurements the app took itself are included.',
-			'Anything that surprised you is worth more than a blank box here.'
-		],
-		questions: [
+			yesNo('handChanged', 'Hold a hand in the middle of the picture. Does anything change?'),
+			{
+				kind: 'choice',
+				name: 'warmth',
+				label: 'Pick the phone up. It feels',
+				options: plain('normal', 'warm', 'hot')
+			},
+			yesNo('smooth', 'Move and zoom the picture with your fingers. Does it stay smooth?'),
 			{
 				kind: 'text',
 				name: 'notes',
-				label: 'Anything you noticed, in any language',
-				placeholder: ''
+				label: 'Anything else you noticed, in any language',
+				placeholder: '',
+				optional: true
 			}
 		]
 	}
 ];
 
-export const isLastStep = (index: number) => index === STEPS.length - 1;
+export const isLastStep = (index: number, steps: Step[] = STEPS) => index === steps.length - 1;
+
+/**
+ * How long the starting step waits for the resolution probe before letting the
+ * tester go on anyway. The probe itself takes about two seconds; this is only
+ * there so that a camera that never reports back cannot trap anyone.
+ */
+export const PROBE_WAIT_MS = 10_000;
+
+/**
+ * Whether the camera kept a higher resolution than it started with. `null`
+ * while the probe is still running, or when it never ran.
+ */
+export function raisedFrom(state: UpgradeState): boolean | null {
+	if (state === 'upgraded') return true;
+	if (state === 'fellback' || state === 'unavailable' || state === 'skipped') return false;
+	return null;
+}
+
+/** The steps as this phone should see them: retitled where the resolution was not raised. */
+export function adaptSteps(steps: Step[], raised: boolean | null): Step[] {
+	if (raised !== false) return steps;
+	return steps.map((step) => {
+		const change = step.ifNotRaised;
+		return change?.kind === 'retitle' ? { ...step, title: change.title } : step;
+	});
+}
+
+/**
+ * The step counter. It counts against the whole protocol, so its total never
+ * changes under the tester. Once steps have been passed over it says how many,
+ * which is what explains the jump in the step number at that moment — and only
+ * from that moment: before the jump there is nothing skipped yet to mention.
+ */
+export function counterText(
+	currentId: string,
+	raised: boolean | null,
+	steps: Step[] = STEPS
+): string {
+	const position = Math.max(
+		0,
+		steps.findIndex((s) => s.id === currentId)
+	);
+	const skipped = steps.slice(0, position).filter((s) => skipReason(s, raised) !== null).length;
+	return `Step ${position + 1} of ${steps.length}${skipped > 0 ? ` (${skipped} skipped)` : ''}`;
+}
+
+/** Why this step is left out on this phone, or `null` when it is not. */
+export function skipReason(step: Step, raised: boolean | null): string | null {
+	return raised === false && step.ifNotRaised?.kind === 'skip' ? step.ifNotRaised.reason : null;
+}

@@ -15,7 +15,11 @@ export default defineConfig({
 	webServer: {
 		command: `npm run build && vite preview --port ${PORT} --strictPort`,
 		port: PORT,
-		reuseExistingServer: false
+		reuseExistingServer: false,
+		// The command builds first. Playwright's default of a minute has been
+		// overrun by the build alone on a busy machine, failing every test
+		// without running one.
+		timeout: 180_000
 	},
 	use: { baseURL: `http://localhost:${PORT}` },
 	projects: [

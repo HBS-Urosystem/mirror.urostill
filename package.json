@@ -12,6 +12,7 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && npm run check:privacy",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"check:privacy": "node scripts/check-privacy.mjs",
+		"submissions": "node scripts/submissions-to-table.mjs",
 		"lint": "prettier --check .",
 		"format": "prettier --write .",
 		"test": "vitest run",
