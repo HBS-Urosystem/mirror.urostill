@@ -351,6 +351,11 @@
 			const response = await fetch('/', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+				// The site sends no referrer anywhere (Referrer-Policy: no-referrer).
+				// This request goes to the site itself, so naming the page leaks
+				// nothing, and Netlify's spam filter gets one reason fewer to doubt
+				// the run: genuine runs have landed in its spam list.
+				referrerPolicy: 'same-origin',
 				body: submissionBody(FORM_NAME, answers.phone ?? '', summary, JSON.stringify(data))
 			});
 			if (!response.ok) throw new Error(`the server answered ${response.status}`);

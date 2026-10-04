@@ -521,10 +521,20 @@ test('it hides the mirror controls, so only the test drives the picture', async 
 });
 
 test('it sends the answers and its own measurements, once, at the end', async ({ page }) => {
+	// The page as Netlify serves it: no referrer on anything, by default.
+	await page.route('**/test', async (route) => {
+		const response = await route.fetch();
+		await route.fulfill({
+			response,
+			headers: { ...response.headers(), 'referrer-policy': 'no-referrer' }
+		});
+	});
 	let posted: string | null = null;
+	let referer: string | undefined;
 	await page.route('**/', async (route) => {
 		if (route.request().method() !== 'POST') return route.fallback();
 		posted = route.request().postData();
+		referer = (await route.request().headerValue('referer')) ?? undefined;
 		await route.fulfill({ status: 200, body: 'ok' });
 	});
 
@@ -535,6 +545,10 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 
 	await sendButton(page).click();
 	await expect(page.getByRole('heading', { name: 'Sent. Thank you.' })).toBeVisible();
+
+	// The one request that names the page it came from, so Netlify's spam filter
+	// sees an ordinary form post. It goes to the site itself.
+	expect(referer).toMatch(/\/test$/);
 
 	const body = new URLSearchParams(posted!);
 	expect(body.get('form-name')).toBe('mirror-test');
