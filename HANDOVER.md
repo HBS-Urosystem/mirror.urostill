@@ -3,6 +3,8 @@
 The app: **https://uromirror.netlify.app/**
 The guided test: **https://uromirror.netlify.app/test**
 
+Neither is public: share the links only with the people who test.
+
 ## What the app does
 
 Mirror is a lighted mirror that runs in the browser. This first version does
@@ -65,7 +67,8 @@ fifteen minutes, ten of them waiting.
 
 You need:
 
-- the printed test card. The test's first step has it as a PDF;
+- the test card, printed at 100% with "fit to page" off. It can be downloaded
+  from the test's first step;
 - something to stand the card on, and something to stand the phone on;
 - a tape measure. Lay it on the table from the phone towards the card and
   leave it there: the card step asks how far the card is;
@@ -75,8 +78,9 @@ You need:
 
 The page asks one thing at a time, sets the mirror up for each step itself, and
 records whatever it can measure without asking you. Once you zoom the picture,
-the magnification is yours: it stays as you set it on every step. At the end it shows
-everything it will send, and sends it in one go.
+the magnification is yours: it stays as you set it on every step. At the end it
+shows everything it will send, and sends it in one go. The answers come back by
+themselves, so there is nothing to collect.
 
 ## The steps, and what each is for
 
