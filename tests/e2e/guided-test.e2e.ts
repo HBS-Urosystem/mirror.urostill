@@ -269,19 +269,51 @@ test('it holds the starting step until the camera has finished changing resoluti
 	await expect(page.getByRole('button', { name: 'Next' })).toBeEnabled({ timeout: 15000 });
 });
 
-test('it puts the picture at the magnification each step asks for', async ({ page }) => {
+test('the card step magnifies five times, and from then on the magnification is the tester’s', async ({
+	page
+}) => {
 	await startTest(page);
 	await haloSettled(page);
 	const atOne = (await view(page)).scale;
+	const now = async () => (await view(page)).scale / atOne;
 
 	await walkTo(page, 'Card');
-	expect((await view(page)).scale / atOne).toBeCloseTo(5, 1);
+	expect(await now()).toBeCloseTo(5, 1);
 
+	// The tester zooms until the square on the card is as wide as the screen.
+	await page.locator('.picture').locator('..').focus();
+	await page.keyboard.press('-');
+	const chosen = await now();
+	expect(chosen).toBeLessThan(4.5);
+
+	// It stays on every step, forward and back, the card step included.
 	await walkTo(page, 'Light');
-	expect((await view(page)).scale / atOne).toBeCloseTo(1, 1);
-
+	expect(await now()).toBeCloseTo(chosen, 1);
+	await page.getByRole('button', { name: 'Back' }).click();
+	await expect(stepTitle(page)).toHaveText('Card');
+	await expect.poll(now).toBeCloseTo(chosen, 1);
 	await walkTo(page, 'Ten minutes');
-	expect((await view(page)).scale / atOne).toBeCloseTo(3, 1);
+	expect(await now()).toBeCloseTo(chosen, 1);
+});
+
+test('a magnification the tester chose before the card step is kept there, and after', async ({
+	page
+}) => {
+	await startTest(page);
+	await haloSettled(page);
+	const atOne = (await view(page)).scale;
+	const now = async () => (await view(page)).scale / atOne;
+
+	// On the starting step, zoomed in a little to see the card better.
+	await page.locator('.picture').locator('..').focus();
+	await page.keyboard.press('+');
+	const chosen = await now();
+	expect(chosen).toBeGreaterThan(1.1);
+
+	await walkTo(page, 'Card');
+	await expect.poll(now).toBeCloseTo(chosen, 1);
+	await walkTo(page, 'Ten minutes');
+	expect(await now()).toBeCloseTo(chosen, 1);
 });
 
 test('with the camera running, the panel is never more than half the screen, and only a bar while the countdown runs', async ({
@@ -585,7 +617,7 @@ test('it sends the answers and its own measurements, once, at the end', async ({
 		driftAlone: 'none',
 		batteryAfter_pct: 42,
 		driftNudge: 'easy',
-		handChanged: true,
+		handEffect: 'nothing',
 		warmth: 'normal',
 		smooth: true,
 		notes: null

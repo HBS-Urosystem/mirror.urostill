@@ -77,6 +77,13 @@
 
 	let zoom = $state(ZOOM_START);
 	let level = $state<HaloLevel>(HALO_DEFAULT);
+	/**
+	 * The magnification carries over from step to step. `appZoom` is the last
+	 * value this page set; a reading from the mirror that differs from it is
+	 * the tester's own choice, and from then on nothing overwrites it.
+	 */
+	let appZoom = ZOOM_START;
+	let zoomChosen = false;
 
 	let cameraOn = $state(false);
 	let starting = $state(false);
@@ -233,10 +240,17 @@
 		heading?.focus();
 	});
 
-	/** Set the mirror up for whichever step is on screen. */
+	/**
+	 * Set the mirror up for whichever step is on screen. The magnification is
+	 * only set while the tester has not chosen one; after that it is theirs, on
+	 * every step, going forward and back.
+	 */
 	$effect(() => {
 		const s = step;
-		zoom = s.zoom ?? ZOOM_START;
+		if (s.zoom !== undefined && !zoomChosen) {
+			appZoom = s.zoom;
+			zoom = s.zoom;
+		}
 		level = s.light ?? HALO_DEFAULT;
 	});
 
@@ -434,7 +448,11 @@
 				}
 				void camera.improveResolution(video);
 			}}
-			onreadings={(r) => (live = r)}
+			onreadings={(r) => {
+				live = r;
+				// A magnification this page did not set was the tester's.
+				if (r.zoom !== appZoom) zoomChosen = true;
+			}}
 		/>
 	{/if}
 

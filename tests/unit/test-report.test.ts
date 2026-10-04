@@ -69,6 +69,11 @@ describe('protocol', () => {
 		expect(distance.kind === 'text' && distance.numeric && distance.unit).toBe('cm');
 	});
 
+	it('sets a magnification on the card step only, for when the tester has not chosen one', () => {
+		const set = STEPS.filter((s) => s.zoom !== undefined).map((s) => [s.id, s.zoom]);
+		expect(set).toEqual([['card', 5]]);
+	});
+
 	it('offers every text size printed on the card, and none of them', () => {
 		const [sizes] = STEPS.find((s) => s.id === 'card')!.questions;
 		expect(sizes.kind === 'choice' && sizes.options.map((o) => o.label)).toEqual([

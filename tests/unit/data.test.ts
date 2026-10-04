@@ -55,8 +55,9 @@ describe('the values answers are sent as', () => {
 	it('come from the option picked, not its wording', () => {
 		expect(answerValue(question('lightDark'), '2 — usable')).toBe(2);
 		expect(answerValue(question('textSharp'), '1.25 mm')).toBe(1.25);
-		expect(answerValue(question('handChanged'), 'yes')).toBe(true);
-		expect(answerValue(question('handChanged'), 'no')).toBe(false);
+		expect(answerValue(question('smooth'), 'yes')).toBe(true);
+		expect(answerValue(question('smooth'), 'no')).toBe(false);
+		expect(answerValue(question('handEffect'), 'it goes blurry')).toBe('blurry');
 		expect(answerValue(question('driftAlone'), 'moved a little')).toBe('little');
 		expect(answerValue(question('driftNudge'), 'annoying')).toBe('annoying');
 		expect(answerValue(question('warmth'), 'warm')).toBe('warm');

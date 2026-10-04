@@ -10,27 +10,8 @@
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-/**
- * `--scale 1.163` compensates for an output path that cannot be set to 100 %:
- * a printer that insists on fitting to the page, or a screen whose CSS
- * millimetre is not a millimetre. Measure the ruler, divide 50 by what you
- * got, pass that, and measure again. The default writes the true-size card.
- */
-const args = process.argv.slice(2);
-const flag = (name) => {
-	const at = args.indexOf(name);
-	return at === -1 ? undefined : args[at + 1];
-};
-const SCALE = Number(flag('--scale') ?? 1);
-if (!Number.isFinite(SCALE) || SCALE <= 0) {
-	console.error('--scale must be a positive number');
-	process.exit(1);
-}
-const OUT_NAME = flag('--out') ?? (SCALE === 1 ? 'testcard.svg' : 'testcard-scaled.svg');
-
 const W = 210;
 const H = 297;
-const MARGIN = 15;
 
 /** Cap heights in mm. Arial's cap height is about 0.716 of its font size. */
 const CAP_HEIGHTS = [1, 1.25, 1.5, 2, 2.5, 3, 4];
@@ -47,56 +28,67 @@ const text = (x, y, capMm, content, extra = '') =>
 
 add(
 	`<?xml version="1.0" encoding="UTF-8"?>`,
-	// The page grows with the scale while the viewBox does not, so everything is
-	// drawn larger and nothing is clipped off the edge.
-	`<svg xmlns="http://www.w3.org/2000/svg" width="${(W * SCALE).toFixed(3)}mm" height="${(H * SCALE).toFixed(3)}mm" viewBox="0 0 ${W} ${H}">`,
+	`<svg xmlns="http://www.w3.org/2000/svg" width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}">`,
 	`<rect width="${W}" height="${H}" fill="#ffffff"/>`,
 	`<g fill="#000000">`
 );
 
+/** Everything on the card is centred on the page. */
+const CENTRE = W / 2;
+const centred = 'text-anchor="middle"';
+
 // Heading
-add(text(MARGIN, 20, 4, 'Mirror — test card', 'font-weight="700"'));
+add(text(CENTRE, 20, 4, 'Mirror — test card', `font-weight="700" ${centred}`));
 add(
 	text(
-		MARGIN,
+		CENTRE,
 		27,
 		2.2,
-		'Print at 100 % (no “fit to page”). Check the ruler with a real one before using the card.'
+		'Print at 100 % (no “fit to page”). Check the ruler with a real one before using the card.',
+		centred
 	)
 );
 
-// Ruler
-const rulerY = 44;
+// A 10 cm square in the middle of the page, holding the ruler and the text.
+// The guided test asks for the picture to be zoomed until the square is as
+// wide as the screen, so every phone is judged at the same framing, and the
+// magnification that took is recorded.
+const SQUARE = 100;
+const squareX = (W - SQUARE) / 2;
+const squareY = (H - SQUARE) / 2;
+add(
+	`<rect x="${squareX}" y="${squareY}" width="${SQUARE}" height="${SQUARE}" fill="none" stroke="#000000" stroke-width="0.5"/>`
+);
+
+// Ruler, centred, with what it should measure above it.
+const rulerX = CENTRE - 25;
+const rulerY = squareY + 19;
+add(text(CENTRE, rulerY - 7, 2.2, '50 mm', centred));
 add(`<g stroke="#000000" stroke-width="0.25">`);
-add(`<line x1="${MARGIN}" y1="${rulerY}" x2="${MARGIN + 50}" y2="${rulerY}"/>`);
+add(`<line x1="${rulerX}" y1="${rulerY}" x2="${rulerX + 50}" y2="${rulerY}"/>`);
 for (let mm = 0; mm <= 50; mm++) {
 	const height = mm % 10 === 0 ? 5 : mm % 5 === 0 ? 3 : 1.6;
-	add(`<line x1="${MARGIN + mm}" y1="${rulerY}" x2="${MARGIN + mm}" y2="${rulerY - height}"/>`);
+	add(`<line x1="${rulerX + mm}" y1="${rulerY}" x2="${rulerX + mm}" y2="${rulerY - height}"/>`);
 }
 add(`</g>`);
 for (let mm = 0; mm <= 50; mm += 10) {
-	add(text(MARGIN + mm, rulerY + 4, 2, `${mm}`, 'text-anchor="middle"'));
+	add(text(rulerX + mm, rulerY + 4, 2, `${mm}`, centred));
 }
-add(text(MARGIN + 56, rulerY + 1, 2.2, '50 mm'));
 
-// Text lines, from small to large: the guided test asks whether the text is
-// sharp at some distance, and the small lines are where a soft picture shows.
-add(text(MARGIN, 60, 2.8, 'Text', 'font-weight="700"'));
-
-let y = 71;
+// Text lines, from small to large, each centred: the small lines are where a
+// soft picture shows first. Their sizes stay in a column on the left, which is
+// where the tester reads off the answer.
+let y = rulerY + 15;
 for (const cap of CAP_HEIGHTS) {
-	add(text(MARGIN, y, 2, `${cap.toFixed(2)} mm`));
-	add(text(MARGIN + 22, y, cap, SPECIMEN));
+	add(text(squareX + 8, y, 2, `${cap.toFixed(2)} mm`));
+	add(text(CENTRE, y, cap, SPECIMEN, centred));
 	y += cap + 7;
 }
 
-add(text(MARGIN, y + 8, 2, 'Keep the card flat and evenly lit.'));
+add(text(CENTRE, squareY + SQUARE + 12, 2, 'Keep the card flat and evenly lit.', centred));
 
 add(`</g>`, `</svg>`, '');
 
-const out = fileURLToPath(new URL(`../docs/${OUT_NAME}`, import.meta.url));
+const out = fileURLToPath(new URL('../docs/testcard.svg', import.meta.url));
 writeFileSync(out, parts.join('\n'));
-console.log(
-	`wrote docs/${OUT_NAME} at ${SCALE}× (${CAP_HEIGHTS.length} text lines)`
-);
-if (SCALE !== 1) console.log('Check the ruler against a real one before using it.');
+console.log(`wrote docs/testcard.svg (${CAP_HEIGHTS.length} text lines)`);

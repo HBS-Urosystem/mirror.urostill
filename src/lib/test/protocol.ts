@@ -57,7 +57,11 @@ export interface Step {
 	/** What to do, in the order it should be done. */
 	instructions: string[];
 	questions: Question[];
-	/** The app puts the picture at this magnification before asking. */
+	/**
+	 * The app puts the picture at this magnification on arriving, but only while
+	 * the tester has not changed the magnification themselves. It carries over
+	 * from step to step, and once it is theirs nothing overwrites it.
+	 */
 	zoom?: number;
 	/** The app sets the light to this before asking. */
 	light?: HaloLevel;
@@ -151,7 +155,6 @@ export const STEPS: Step[] = [
 		title: 'Starting the camera',
 		needsCamera: true,
 		startClosed: true,
-		zoom: 1,
 		instructions: [],
 		questions: [
 			yesNo(
@@ -169,17 +172,19 @@ export const STEPS: Step[] = [
 	},
 	{
 		// At the best resolution the app uses on this phone: the starting step held
-		// the tester until the camera had settled on it. Magnified to the most the
-		// mirror allows, because that is where a soft picture shows first. A pinch
-		// can still change it, so the magnification is recorded with the answer:
-		// the snapshot taken when Next is pressed.
+		// the tester until the camera had settled on it. Unless the tester has
+		// zoomed already, it starts magnified to the most the mirror allows, where
+		// a soft picture shows first. Then the tester zooms until the 10 cm square
+		// on the card is as wide as the screen, so every phone is judged at the
+		// same framing; the snapshot taken when Next is pressed records the
+		// magnification that took.
 		id: 'card',
 		title: 'Card',
 		needsCamera: true,
 		zoom: 5,
 		instructions: [
-			'The picture is magnified five times. Drag it to see the text, then move the card slowly nearer and further.',
-			'Leave the card where the text looks sharpest, and read the distance off the tape measure.'
+			'Drag the picture to see the text, then move the card slowly nearer and further, and leave it where the text looks sharpest. Read the distance off the tape measure.',
+			'Then zoom with two fingers until the square on the card is as wide as the screen, and drag it above this panel.'
 		],
 		questions: [
 			{
@@ -205,7 +210,6 @@ export const STEPS: Step[] = [
 		id: 'light',
 		title: 'Light',
 		needsCamera: true,
-		zoom: 1,
 		light: 'bright',
 		darkSheet: true,
 		instructions: ['Leave the card where it is.'],
@@ -229,11 +233,12 @@ export const STEPS: Step[] = [
 		// ten minutes also show whether the picture drifts when nothing moves —
 		// and the checks that need the phone touched come after, in that order.
 		// The open panel is exactly half the screen, so the line just above it is
-		// the middle of the screen: the mark both drift questions go by.
+		// the middle of the screen: the mark both drift questions go by. The
+		// magnification is the one the tester set on the card step, with the
+		// square as wide as the screen, unless they changed it since.
 		id: 'ten-minutes',
 		title: 'Ten minutes',
 		needsCamera: true,
-		zoom: 3,
 		waitSeconds: 600,
 		instructions: [
 			'Leave the phone on its stand, facing the card, and note which part of the card is in the middle of the screen, just above this panel. Do not touch the phone while the countdown runs.'
@@ -276,7 +281,19 @@ export const STEPS: Step[] = [
 					'Nudge the stand by about a centimetre, then drag the picture until the part of the card that was in the middle is back in the middle. That was',
 				options: plain('easy', 'annoying')
 			},
-			yesNo('handChanged', 'Hold a hand in the middle of the picture. Does anything change?'),
+			// In use a hand is in the picture most of the time. A camera that
+			// refocuses on it, or sets its exposure by it, blurs or dims the rest.
+			{
+				kind: 'choice',
+				name: 'handEffect',
+				label: 'Move your hand in front of the card a few times. What happens to the card?',
+				options: [
+					{ label: 'nothing', value: 'nothing' },
+					{ label: 'it goes blurry', value: 'blurry' },
+					{ label: 'it gets brighter or darker', value: 'brightness' },
+					{ label: 'both', value: 'both' }
+				]
+			},
 			{
 				kind: 'choice',
 				name: 'warmth',

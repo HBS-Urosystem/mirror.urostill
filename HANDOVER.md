@@ -38,8 +38,8 @@ it has been tried on. The following has to be checked on as many phones as
 possible, of different makes, models and ages:
 
 - **How sharp the picture can be.** Front cameras differ a great deal. How
-  small a text can be made sharp, magnified five times, and at what distance,
-  can only be seen on each phone.
+  small a text can be made sharp, at what distance, and how far the picture has
+  to be magnified to show a 10 cm area, can only be seen on each phone.
 - **Whether the screen gives enough light.** That depends on the screen and the
   room.
 - **What it costs to run.** Battery use and heat over ten minutes, and whether
@@ -74,7 +74,8 @@ You need:
 **Do not reload the page.** Nothing is stored, so a reload loses every answer.
 
 The page asks one thing at a time, sets the mirror up for each step itself, and
-records whatever it can measure without asking you. At the end it shows
+records whatever it can measure without asking you. Once you zoom the picture,
+the magnification is yours: it stays as you set it on every step. At the end it shows
 everything it will send, and sends it in one go.
 
 ## The steps, and what each is for
@@ -92,15 +93,17 @@ everything it will send, and sends it in one go.
    **What for:** deciding whether raising the resolution is unnoticeable enough to
    keep. If people notice it, it has to happen differently, or not at all.
 
-3. **Card.** Magnified five times, at the best resolution the app uses on that
-   phone: moving the card nearer and further, the smallest line of text that can
-   be made sharp, from the 1 to 4 mm lines on the card, or none of them, and how
-   far the card is from the phone where the text is sharpest. The app records
-   the magnification it was answered at. The card then stays where it is.
+3. **Card.** At the best resolution the app uses on that phone, magnified five
+   times unless you have zoomed already: the card is moved nearer and further
+   until the text is sharpest, and the distance read off the tape measure. Then the picture is
+   zoomed until the 10 cm square on the card is as wide as the screen, and the
+   smallest line of text that is sharp is picked, from the 1 to 4 mm lines on
+   the card, or none of them. The app records the magnification that took. The
+   card then stays where it is.
 
-   **What for:** how much detail the phone shows at the maximum magnification,
-   now five times, and at what distance. If even the large lines cannot be made
-   sharp, the maximum comes down.
+   **What for:** how much detail the phone shows when a 10 cm area fills the
+   screen, at what distance, and how far it had to be magnified for that. This
+   is what the maximum magnification, now five times, is set by.
 
 4. **Light.** With the light frame at its brightest, and the card where the
    last step left it: is there enough light on the card in a dark room, and then
@@ -110,18 +113,20 @@ everything it will send, and sends it in one go.
    even at its brightest, no change to the app can fix that, and a separate
    light is the answer.
 
-5. **Ten minutes.** The phone stays on its stand, facing the card. You enter the
-   battery percentage, and the countdown starts. Afterwards: whether the picture
+5. **Ten minutes.** The phone stays on its stand, facing the card, magnified as
+   you left it. You enter the battery percentage, and the countdown starts. Afterwards: whether the picture
    has moved, the battery percentage again, how hard it is to drag the picture
-   back to the middle after a nudge to the stand, whether a hand in the picture
-   changes anything, how warm the phone is,
-   whether moving and zooming stays smooth, and anything else you noticed. The
-   app records whether the screen stayed on.
+   back to the middle after a nudge to the stand, what a hand moved in front of
+   the card a few times does to it, how warm the phone is, whether moving and
+   zooming stays smooth, and anything else you noticed. The app records whether
+   the screen stayed on.
 
    **What for:** battery, heat and staying awake, which decide whether the app works in
    everyday use; and whether software to hold the picture steady is worth
    writing. That software would run the whole time and cost battery, so it is
-   only written if the picture moves enough to be a nuisance.
+   only written if the picture moves enough to be a nuisance. And in use a hand
+   is in the picture most of the time: if the camera blurs or dims the rest
+   whenever one comes in, that shows here.
 
 Then press **Send the results**.
 

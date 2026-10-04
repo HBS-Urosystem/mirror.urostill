@@ -16,19 +16,8 @@ once at 1080p and once at whatever the upgrade settles on.
    one: 0 to 50 must be 50 mm. If it isn't, nothing else on the card means
    anything.
 
-   The card works on a screen too, which saves printing — but a browser's CSS
-   millimetre is not a millimetre, so it must be measured the same way. Hold a
-   real ruler to the screen and read the card's ruler. If it comes out short,
-   regenerate the card compensated and measure again:
-
-   ```bash
-   node scripts/make-testcard.mjs --scale 1.163   # 50 ÷ what you measured
-   ```
-
-   That writes `docs/testcard-scaled.svg` and leaves the true-size card alone.
-
-   A laptop cannot photograph its own screen, so for a laptop row the card has
-   to be somewhere else: on paper, on a phone or tablet, or on a second monitor.
+   A laptop cannot photograph its own screen, so for a laptop row too the card
+   is on paper.
 
 2. Stand the card upright, flat and evenly lit. No glare across it.
 3. Measure distances **from the card to the camera**, not to the screen.
